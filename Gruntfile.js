@@ -28,13 +28,7 @@ module.exports = function(grunt) {
                     'date\n' +
                     'docker-compose logs prestashop17-test\n' +
                     'set -e\n' +
-                    'vendor/bin/phpunit --group prestashop17basic\n' +
-                    'vendor/bin/phpunit --group prestashop17install\n' +
-                    'vendor/bin/phpunit --group prestashop17register\n' +
-                    'vendor/bin/phpunit --group prestashop17buy\n' +
-                    'vendor/bin/phpunit --group prestashop17advanced\n' +
-                    'vendor/bin/phpunit --group prestashop17validate\n' +
-                    'vendor/bin/phpunit --group prestashop17controller\n'
+                    'vendor/bin/phpunit --group prestashop17basic\n'
             },
             runTestPrestashop16: {
                 command:
@@ -46,13 +40,7 @@ module.exports = function(grunt) {
                     'date\n' +
                     'docker-compose logs prestashop16-test\n' +
                     'set -e\n' +
-                    'vendor/bin/phpunit --group prestashop16basic\n' +
-                    'vendor/bin/phpunit --group prestashop16install\n' +
-                    'vendor/bin/phpunit --group prestashop16register\n' +
-                    'vendor/bin/phpunit --group prestashop16buy\n' +
-                    'vendor/bin/phpunit --group prestashop16advanced\n' +
-                    'vendor/bin/phpunit --group prestashop16validate\n' +
-                    'vendor/bin/phpunit --group prestashop16controller\n'
+                    'vendor/bin/phpunit --group prestashop16basic\n'
             },
         },
         compress: {
