@@ -14,7 +14,7 @@
     },
     "require-dev": {
         "pagantis/autoindex": "^1.0",
-        "pagantis/selenium-form-utils": "^3.0"
+        "pagantis/selenium-form-utils":"dev-clearpay"
     },
     "autoload-dev": {
         "psr-4": {

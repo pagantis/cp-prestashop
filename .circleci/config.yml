@@ -99,7 +99,7 @@ jobs:
           command: |
             github-release upload \
                 --user pagantis \
-                --repo prestashop \
+                --repo cp-prestashop \
                 --tag $CIRCLE_TAG \
                 --name pagantis-$CIRCLE_TAG.zip \
                 --file pagantis-$CIRCLE_TAG.zip

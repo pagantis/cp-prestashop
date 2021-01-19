@@ -166,10 +166,10 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             $products[] = array(
                 'name' => utf8_encode($item['name']),
                 'sku' => $item['reference'],
-                'quantity' => $item['quantity'],
+                'quantity' => (int) $item['quantity'],
                 'price' => array(
-                    Clearpay::parseAmount($item['price_wt']),
-                    $currency
+                    'amount' => Clearpay::parseAmount($item['price_wt']),
+                    'currency' => $currency
                 )
             );
         }
@@ -185,7 +185,7 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             $createCheckoutRequest->send();
             $errorMessage = 'empty response';
             if ($createCheckoutRequest->getResponse()->getHttpStatusCode() >= 400
-            || isset($createCheckoutRequest->getResponse()->getParsedBody()->errorCode)
+                || isset($createCheckoutRequest->getResponse()->getParsedBody()->errorCode)
             ) {
                 if (isset($createCheckoutRequest->getResponse()->getParsedBody()->message)) {
                     $errorMessage = $createCheckoutRequest->getResponse()->getParsedBody()->message;
