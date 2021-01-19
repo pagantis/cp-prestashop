@@ -256,9 +256,6 @@ class Clearpay extends PaymentModule
         $secretKey = Configuration::get('CLEARPAY_SECRET_KEY');
 
         $allowedCountries = json_decode(Clearpay::getExtraConfig('ALLOWED_COUNTRIES', null));
-        if (Configuration::get('CLEARPAY_REGION') === 'GB') {
-            $allowedCountries = array('gb');
-        }
         $language = $this->getCurrentLanguage();
         $categoryRestriction = $this->isCartRestricted($this->context->cart);
         return (
@@ -791,9 +788,7 @@ class Clearpay extends PaymentModule
         $cart = $this->context->cart;
         $currency = new Currency($cart->id_currency);
         $allowedCountries = json_decode(Clearpay::getExtraConfig('ALLOWED_COUNTRIES', null));
-        if (Configuration::get('CLEARPAY_REGION') === 'GB') {
-            $allowedCountries = array('gb');
-        }
+
         $availableCurrencies = explode(",", self::CLEARPAY_AVAILABLE_CURRENCIES);
         $language = $this->getCurrentLanguage();
         if ($isEnabled &&
@@ -1140,9 +1135,6 @@ class Clearpay extends PaymentModule
     private function getCurrentLanguage()
     {
         $allowedCountries = json_decode(Clearpay::getExtraConfig('ALLOWED_COUNTRIES', null));
-        if (Configuration::get('CLEARPAY_REGION') === 'GB') {
-            $allowedCountries = array('gb');
-        }
         $lang = Language::getLanguage($this->context->language->id);
         $langArray = explode("-", $lang['language_code']);
         if (count($langArray) != 2 && isset($lang['locale'])) {
