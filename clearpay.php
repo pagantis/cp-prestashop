@@ -93,7 +93,7 @@ class Clearpay extends PaymentModule
     {
         $this->name = 'clearpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.2';
+        $this->version = '1.0.3';
         $this->author = 'Clearpay';
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
@@ -1170,7 +1170,7 @@ class Clearpay extends PaymentModule
     }
 
     /**
-     * @param null $region
+     * @param $region
      * @return string
      */
     public function getCountriesPerRegion($region = '')
@@ -1178,7 +1178,7 @@ class Clearpay extends PaymentModule
         if (isset($this->defaultCountriesPerRegion[$region])) {
             return $this->defaultCountriesPerRegion[$region];
         }
-        return array();
+        return json_encode(array());
     }
 
     /**
