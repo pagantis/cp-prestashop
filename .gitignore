@@ -1,0 +1,5 @@
+/node_modules
+/vendor
+/views/css/
+config_es.xml
+.env

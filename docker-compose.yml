@@ -1,0 +1,124 @@
+version: "3.5"
+services:
+  prestashop16-test:
+    container_name: prestashop16-test
+    image: prestashop/prestashop:1.6.1.20
+    depends_on:
+      - db16-test
+    environment:
+      - PS_DEV_MODE=0
+      - PS_COUNTRY=ES
+      - PS_DOMAIN=prestashop16-test.docker:8016
+      - PS_FOLDER_ADMIN=adminTest
+      - PS_FOLDER_INSTALL=installTest
+      - PS_HANDLE_DYNAMIC_DOMAIN=1
+      - PS_INSTALL_AUTO=1
+      - DB_SERVER=db16-test
+      - DB_NAME=db16-test
+      - DB_PREFIX=ps_
+      - DB_PASSWD=password
+    ports:
+      - "8016:80"
+    extra_hosts:
+      - "prestashop16-test.docker:127.0.0.1"
+  prestashop17-test:
+    container_name: prestashop17-test
+    image: prestashop/prestashop:1.7.6.9
+    depends_on:
+      - db17-test
+    environment:
+      - PS_DEV_MODE=0
+      - PS_COUNTRY=ES
+      - PS_DOMAIN=prestashop17-test.docker:8017
+      - PS_FOLDER_ADMIN=adminTest
+      - PS_FOLDER_INSTALL=installTest
+      - PS_HANDLE_DYNAMIC_DOMAIN=1
+      - PS_INSTALL_AUTO=1
+      - DB_SERVER=db17-test
+      - DB_NAME=db17-test
+      - DB_PREFIX=ps_
+      - DB_PASSWD=password
+    ports:
+      - "8017:80"
+    extra_hosts:
+      - "prestashop17-test.docker:127.0.0.1"
+  prestashop17-dev:
+    container_name: prestashop17-dev
+    image: prestashop/prestashop:1.7.6.9
+    depends_on:
+      - db17-dev
+    environment:
+      - PS_DEV_MODE=1
+      - PS_COUNTRY=ES
+      - PS_DOMAIN=prestashop17-dev.docker:8018
+      - PS_FOLDER_ADMIN=adminTest
+      - PS_FOLDER_INSTALL=installTest
+      - PS_HANDLE_DYNAMIC_DOMAIN=1
+      - PS_INSTALL_AUTO=1
+      - DB_SERVER=db17-dev
+      - DB_NAME=db17-dev
+      - DB_PREFIX=ps_
+      - DB_PASSWD=password
+    volumes:
+      - ./:/var/www/html/modules/clearpay
+    ports:
+      - "8018:80"
+    extra_hosts:
+      - "prestashop17-dev.docker:127.0.0.1"
+  prestashop16-dev:
+    container_name: prestashop16-dev
+    image: prestashop/prestashop:1.6.1.20
+    depends_on:
+      - db16-dev
+    environment:
+      - PS_DEV_MODE=1
+      - PS_COUNTRY=ES
+      - PS_DOMAIN=prestashop16-dev.docker:8019
+      - PS_FOLDER_ADMIN=adminTest
+      - PS_FOLDER_INSTALL=installTest
+      - PS_HANDLE_DYNAMIC_DOMAIN=1
+      - PS_INSTALL_AUTO=1
+      - DB_SERVER=db16-dev
+      - DB_NAME=db16-dev
+      - DB_PREFIX=ps_
+      - DB_PASSWD=password
+    volumes:
+      - ./:/var/www/html/modules/clearpay
+    ports:
+      - "8019:80"
+    extra_hosts:
+      - "prestashop16-dev.docker:127.0.0.1"
+  db17-dev:
+    container_name: db17-dev
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db17-dev
+  db16-dev:
+    container_name:  db16-dev
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db16-dev
+  db17-test:
+    container_name:  db17-test
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db17-test
+  db16-test:
+    container_name: db16-test
+    image: mysql:5.6
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db16-test
+  selenium:
+    container_name: prestashopSelenium
+    image: selenium/standalone-chrome:3.11.0
+    ports:
+      - "4444:4444"
+    extra_hosts:
+      - "prestashop15-test.docker:${DOCKERHOST}"
+      - "prestashop16-test.docker:${DOCKERHOST}"
+      - "prestashop17-test.docker:${DOCKERHOST}"
+      - "prestashop-dev.docker:${DOCKERHOST}"
