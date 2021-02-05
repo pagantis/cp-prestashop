@@ -83,7 +83,7 @@ class Clearpay extends PaymentModule
     {
         $this->name = 'clearpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.3';
+        $this->version = '1.0.4';
         $this->author = 'Clearpay';
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
@@ -405,7 +405,7 @@ class Clearpay extends PaymentModule
                     ),
                     array(
                         'CLEARPAY_REGION_id' => 'NZ',
-                        'CLEARPAY_REGION_name' => $this->l('New Zeland')
+                        'CLEARPAY_REGION_name' => $this->l('New Zealand')
                     ),
                     array(
                         'CLEARPAY_REGION_id' => 'US',
@@ -826,7 +826,7 @@ class Clearpay extends PaymentModule
             }
             $templateConfigs['AMOUNT_WITH_CURRENCY'] = $templateConfigs['AMOUNT'] . $this->currencySymbol;
             $templateConfigs['PRICE_SELECTOR'] = Configuration::get('CLEARPAY_CSS_SELECTOR');
-            if ($templateConfigs['PRICE_SELECTOR'] === 'default') {
+            if ($templateConfigs['PRICE_SELECTOR'] === 'default' || $templateConfigs['PRICE_SELECTOR'] === '') {
                 $templateConfigs['PRICE_SELECTOR'] = '.current-price';
                 if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
                     $templateConfigs['PRICE_SELECTOR'] = '.our_price_display';
