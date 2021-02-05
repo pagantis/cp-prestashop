@@ -12,10 +12,3 @@ CREATE TABLE IF NOT EXISTS `PREFIX_clearpay_order` (
   `ps_order_id` varchar(60) NULL,
   PRIMARY KEY (`id`, `order_id`)
   ) ENGINE = InnoDB;
-
-CREATE TABLE IF NOT EXISTS  `PREFIX_clearpay_config` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `config` VARCHAR(60) NOT NULL,
-  `value` VARCHAR(5000) NOT NULL,
-  PRIMARY KEY (`id`)
-  ) ENGINE = InnoDB;

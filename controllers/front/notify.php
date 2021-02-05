@@ -191,10 +191,10 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         $callbackKoUrl = $this->context->link->getPageLink('order', null, null, array('step'=>3));
 
         $this->config = array(
-            'urlOK' => (Clearpay::getExtraConfig('URL_OK') !== '') ?
-                Clearpay::getExtraConfig('URL_OK') : $callbackOkUrl,
-            'urlKO' => (Clearpay::getExtraConfig('URL_KO') !== '') ?
-                Clearpay::getExtraConfig('URL_KO') : $callbackKoUrl,
+            'urlOK' => (Configuration::get('CLEARPAY_URL_OK') !== '') ?
+                Configuration::get('CLEARPAY_URL_OK') : $callbackOkUrl,
+            'urlKO' => (Configuration::get('CLEARPAY_URL_KO') !== '') ?
+                Configuration::get('CLEARPAY_URL_KO') : $callbackKoUrl,
             'secureKey' => Tools::getValue('key'),
         );
 
@@ -383,6 +383,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
             'merchantReference' => $this->config['publicKey']
         ));
         $immediatePaymentCaptureRequest->setMerchantAccount($this->clearpayMerchantAccount);
+        $immediatePaymentCaptureRequest->setUri("/v1/payments/capture");
         $immediatePaymentCaptureRequest->send();
         if ($immediatePaymentCaptureRequest->getResponse()->getHttpStatusCode() >= 400) {
             $this->paymentDeclined = true;

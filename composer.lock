@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "405a5bf40de51d5ba1fa73e52330fb3e",
+    "content-hash": "d6eb749d61d48305916955a1862633a7",
     "packages": [
         {
             "name": "afterpay-global/afterpay-sdk-php",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/afterpay/sdk-php.git",
-                "reference": "58286296fc2f70d804962c60667d3a0cdd8d6df0"
+                "reference": "c69b1108fa368151d64b83101021094580368b1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/afterpay/sdk-php/zipball/58286296fc2f70d804962c60667d3a0cdd8d6df0",
-                "reference": "58286296fc2f70d804962c60667d3a0cdd8d6df0",
+                "url": "https://api.github.com/repos/afterpay/sdk-php/zipball/c69b1108fa368151d64b83101021094580368b1b",
+                "reference": "c69b1108fa368151d64b83101021094580368b1b",
                 "shasum": ""
             },
             "require-dev": {
@@ -42,7 +42,7 @@
                 }
             ],
             "description": "Official Afterpay SDK for PHP",
-            "time": "2020-11-18T22:50:39+00:00"
+            "time": "2020-12-10T08:40:01+00:00"
         }
     ],
     "packages-dev": [
@@ -160,16 +160,16 @@
         },
         {
             "name": "fzaninotto/faker",
-            "version": "v1.9.1",
+            "version": "v1.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fzaninotto/Faker.git",
-                "reference": "fc10d778e4b84d5bd315dad194661e091d307c6f"
+                "reference": "848d8125239d7dbf8ab25cb7f054f1a630e68c2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/fc10d778e4b84d5bd315dad194661e091d307c6f",
-                "reference": "fc10d778e4b84d5bd315dad194661e091d307c6f",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/848d8125239d7dbf8ab25cb7f054f1a630e68c2e",
+                "reference": "848d8125239d7dbf8ab25cb7f054f1a630e68c2e",
                 "shasum": ""
             },
             "require": {
@@ -207,7 +207,7 @@
                 "fixtures"
             ],
             "abandoned": true,
-            "time": "2019-12-12T13:22:17+00:00"
+            "time": "2020-12-11T09:56:16+00:00"
         },
         {
             "name": "nategood/httpful",
@@ -261,7 +261,7 @@
         },
         {
             "name": "nayjest/str-case-converter",
-            "version": "v1.0.1",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Nayjest/StrCaseConverter.git",
@@ -381,16 +381,16 @@
         },
         {
             "name": "pagantis/selenium-form-utils",
-            "version": "v3.0.3",
+            "version": "dev-clearpay",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pagantis/selenium-form-utils.git",
-                "reference": "d549b0a1ac18c4069c7e4aa6492b12ad68cb8a01"
+                "reference": "1ce31df80630c6e6cf9b817638308b96a1fcf7c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pagantis/selenium-form-utils/zipball/d549b0a1ac18c4069c7e4aa6492b12ad68cb8a01",
-                "reference": "d549b0a1ac18c4069c7e4aa6492b12ad68cb8a01",
+                "url": "https://api.github.com/repos/pagantis/selenium-form-utils/zipball/1ce31df80630c6e6cf9b817638308b96a1fcf7c0",
+                "reference": "1ce31df80630c6e6cf9b817638308b96a1fcf7c0",
                 "shasum": ""
             },
             "require": {
@@ -418,7 +418,7 @@
                 }
             ],
             "description": "Pagantis PHP Library. Selenium helper to end a test purchase. Helper to test the payment validation and redirection",
-            "time": "2020-03-16T12:19:59+00:00"
+            "time": "2020-12-11T09:57:54+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -1445,16 +1445,16 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.20.0",
+            "version": "v1.22.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "f4ba089a5b6366e453971d3aad5fe8e897b37f41"
+                "reference": "c6c942b1ac76c82448322025e084cadc56048b4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/f4ba089a5b6366e453971d3aad5fe8e897b37f41",
-                "reference": "f4ba089a5b6366e453971d3aad5fe8e897b37f41",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/c6c942b1ac76c82448322025e084cadc56048b4e",
+                "reference": "c6c942b1ac76c82448322025e084cadc56048b4e",
                 "shasum": ""
             },
             "require": {
@@ -1466,7 +1466,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.20-dev"
+                    "dev-main": "1.22-dev"
                 },
                 "thanks": {
                     "name": "symfony/polyfill",
@@ -1503,20 +1503,20 @@
                 "polyfill",
                 "portable"
             ],
-            "time": "2020-10-23T14:02:19+00:00"
+            "time": "2021-01-07T16:49:33+00:00"
         },
         {
             "name": "symfony/process",
-            "version": "v4.4.16",
+            "version": "v4.4.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "2f4b049fb80ca5e9874615a2a85dc2a502090f05"
+                "reference": "7e950b6366d4da90292c2e7fa820b3c1842b965a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/2f4b049fb80ca5e9874615a2a85dc2a502090f05",
-                "reference": "2f4b049fb80ca5e9874615a2a85dc2a502090f05",
+                "url": "https://api.github.com/repos/symfony/process/zipball/7e950b6366d4da90292c2e7fa820b3c1842b965a",
+                "reference": "7e950b6366d4da90292c2e7fa820b3c1842b965a",
                 "shasum": ""
             },
             "require": {
@@ -1545,13 +1545,13 @@
                     "homepage": "https://symfony.com/contributors"
                 }
             ],
-            "description": "Symfony Process Component",
+            "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
-            "time": "2020-10-24T11:50:19+00:00"
+            "time": "2021-01-27T09:09:26+00:00"
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.4.46",
+            "version": "v3.4.47",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
@@ -1608,12 +1608,12 @@
             "version": "1.9.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/webmozart/assert.git",
+                "url": "https://github.com/webmozarts/assert.git",
                 "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozart/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
                 "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389",
                 "shasum": ""
             },
@@ -1656,7 +1656,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "afterpay-global/afterpay-sdk-php": 20
+        "afterpay-global/afterpay-sdk-php": 20,
+        "pagantis/selenium-form-utils": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

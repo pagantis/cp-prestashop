@@ -29,6 +29,7 @@ class ClearpayPaymentModuleFrontController extends AbstractController
     {
         $context = Context::getContext();
         $currency = $context->currency->iso_code;
+        $apiVersion = Configuration::get('CLEARPAY_API_VERSION');
 
         /** @var Cart $cart */
         $cart = $context->cart;
@@ -74,7 +75,7 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             null,
             array('step'=>3)
         );
-        $cancelUrl = (Clearpay::getExtraConfig('URL_KO') !== '') ? Clearpay::getExtraConfig('URL_KO', null) : $koUrl;
+        $cancelUrl = (Configuration::get('CLEARPAY_URL_KO') !== '') ? Configuration::get('CLEARPAY_URL_KO') : $koUrl;
 
         $publicKey = Configuration::get('CLEARPAY_PUBLIC_KEY');
         $secretKey = Configuration::get('CLEARPAY_SECRET_KEY');
@@ -104,10 +105,6 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                 'redirectCancelUrl' => $cancelUrl
             ))
             ->setMerchantAccount($clearpayMerchantAccount)
-            ->setTotalAmount(
-                Clearpay::parseAmount($cart->getOrderTotal(true, Cart::BOTH)),
-                $currency
-            )
             ->setTaxAmount(
                 Clearpay::parseAmount(
                     $cart->getOrderTotal(true, Cart::BOTH) - $cart->getOrderTotal(false, Cart::BOTH)
@@ -151,6 +148,17 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                 'priority' => 'STANDARD'
             ));
 
+        $createCheckoutRequest->setTotalAmount(
+            Clearpay::parseAmount($cart->getOrderTotal(true, Cart::BOTH)),
+            $currency
+        );
+
+//        if ($apiVersion === 'v2') {
+//            $createCheckoutRequest->setAmount(
+//                Clearpay::parseAmount($cart->getOrderTotal(true, Cart::BOTH)),
+//                $currency
+//            );
+//        }
         if (!empty($discountAmount)) {
             $createCheckoutRequest->setDiscounts(array(
                 array(
@@ -182,6 +190,8 @@ class ClearpayPaymentModuleFrontController extends AbstractController
         $createCheckoutRequest->addHeader('Country', $countryCode);
         $url = $cancelUrl;
         if ($createCheckoutRequest->isValid()) {
+            $endPoint = ($apiVersion === 'v2') ? "checkouts": "orders";
+            $createCheckoutRequest->setUri("/$apiVersion/$endPoint");
             $createCheckoutRequest->send();
             $errorMessage = 'empty response';
             if ($createCheckoutRequest->getResponse()->getHttpStatusCode() >= 400
@@ -235,7 +245,7 @@ class ClearpayPaymentModuleFrontController extends AbstractController
         $context = Context::getContext();
         $cart = $context->cart;
 
-        $allowedCountries = json_decode(Clearpay::getExtraConfig('ALLOWED_COUNTRIES', null));
+        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         $lang = Language::getLanguage($this->context->language->id);
         $langArray = explode("-", $lang['language_code']);
         if (count($langArray) != 2 && isset($lang['locale'])) {
