@@ -63,6 +63,20 @@ class Clearpay extends PaymentModule
     );
 
     /**
+     * Default API Version per region
+     *
+     * @var array
+     */
+    public $defaultApiVersionPerRegion = array(
+        'AU' => 'v2',
+        'CA' => 'v2',
+        'ES' => 'v1',
+        'GB' => 'v2',
+        'NZ' => 'v2',
+        'US' => 'v2',
+    );
+
+    /**
      * @var null $shippingAddress
      */
     protected $shippingAddress = null;
@@ -619,9 +633,10 @@ class Clearpay extends PaymentModule
                         ->setCountryCode(Configuration::get('CLEARPAY_REGION'))
                     ;
 
+                    $apiVersion = $this->getApiVersionPerRegion(Configuration::get('CLEARPAY_REGION'));
                     $getConfigurationRequest = new Afterpay\SDK\HTTP\Request\GetConfiguration();
                     $getConfigurationRequest->setMerchantAccount($merchantAccount);
-                    $getConfigurationRequest->setUri("/v1/configuration?include=activeCountries");
+                    $getConfigurationRequest->setUri("/$apiVersion/configuration?include=activeCountries");
                     $getConfigurationRequest->send();
                     $configuration = $getConfigurationRequest->getResponse()->getParsedBody();
 
@@ -1160,6 +1175,19 @@ class Clearpay extends PaymentModule
         }
         return json_encode(array($region));
     }
+
+    /**
+     * @param $region
+     * @return string
+     */
+    public function getApiVersionPerRegion($region = '')
+    {
+        if (isset($this->defaultApiVersionPerRegion[$region])) {
+            return $this->defaultApiVersionPerRegion[$region];
+        }
+        return json_encode(array($region));
+    }
+
 
     /**
      * @param null $amount

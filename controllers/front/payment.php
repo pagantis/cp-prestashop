@@ -28,9 +28,9 @@ class ClearpayPaymentModuleFrontController extends AbstractController
     public $defaultApiVersionPerRegion = array(
         'AU' => 'v2',
         'CA' => 'v2',
-        'ES' => 'v2',
+        'ES' => 'v1',
         'GB' => 'v2',
-        'NZ' => 'v1',
+        'NZ' => 'v2',
         'US' => 'v2',
     );
 
