@@ -21,154 +21,180 @@ class ClearpayPaymentModuleFrontController extends AbstractController
     protected $language;
 
     /**
-     * Process Post Request
+     * Default API Version per region
      *
-     * @throws \Exception
+     * @var array
+     */
+    public $defaultApiVersionPerRegion = array(
+        'AU' => 'v2',
+        'CA' => 'v2',
+        'ES' => 'v2',
+        'GB' => 'v2',
+        'NZ' => 'v1',
+        'US' => 'v2',
+    );
+
+    /**
+     * @param $region
+     * @return string
+     */
+    public function getApiVersionPerRegion($region = '')
+    {
+        if (isset($this->defaultApiVersionPerRegion[$region])) {
+            return $this->defaultApiVersionPerRegion[$region];
+        }
+        return json_encode(array($region));
+    }
+
+    /**
+     * @return mixed
+     * @throws \Afterpay\SDK\Exception\InvalidArgumentException
+     * @throws \Afterpay\SDK\Exception\NetworkException
+     * @throws \Afterpay\SDK\Exception\ParsingException
      */
     public function postProcess()
     {
+        $paymentObjData = array();
         $context = Context::getContext();
-        $currency = $context->currency->iso_code;
-        $apiVersion = Configuration::get('CLEARPAY_API_VERSION');
+        $paymentObjData['currency'] = $context->currency->iso_code;
+        $paymentObjData['region'] = Configuration::get('CLEARPAY_REGION');
 
-        /** @var Cart $cart */
-        $cart = $context->cart;
-        $shippingAddress = new Address($cart->id_address_delivery);
-        $shippingCountryObj = new Country($shippingAddress->id_country);
-        $shippingCountryCode = $shippingCountryObj->iso_code;
-        $shippingStateObj = new State($shippingAddress->id_state);
-        $shippingStateCode = '';
-        if (!empty($shippingAddress->id_state)) {
-            $shippingStateCode = $shippingStateObj->iso_code;
+        /** @var Cart $paymentObjData['cart'] */
+        $paymentObjData['cart'] = $context->cart;
+        $paymentObjData['shippingAddress'] = new Address($paymentObjData['cart']->id_address_delivery);
+        $shippingCountryObj = new Country($paymentObjData['shippingAddress']->id_country);
+        $paymentObjData['shippingCountryCode'] = $shippingCountryObj->iso_code;
+        $shippingStateObj = new State($paymentObjData['shippingAddress']->id_state);
+        $paymentObjData['shippingStateCode'] = '';
+        if (!empty($paymentObjData['shippingAddress']->id_state)) {
+            $paymentObjData['shippingStateCode'] = $shippingStateObj->iso_code;
         }
 
-        $billingAddress = new Address($cart->id_address_invoice);
-        $billingCountryCode = Country::getIsoById($billingAddress->id_country);
-        $billingStateObj = new State($billingAddress->id_state);
-        $billingStateCode = '';
-        if (!empty($billingAddress->id_state)) {
-            $billingStateCode = $billingStateObj->iso_code;
+        $paymentObjData['billingAddress'] = new Address($paymentObjData['cart']->id_address_invoice);
+        $paymentObjData['billingCountryCode'] = Country::getIsoById($paymentObjData['billingAddress']->id_country);
+        $billingStateObj = new State($paymentObjData['billingAddress']->id_state);
+        $paymentObjData['billingStateCode'] = '';
+        if (!empty($paymentObjData['billingAddress']->id_state)) {
+            $paymentObjData['billingStateCode'] = $billingStateObj->iso_code;
         }
+        $paymentObjData['countryCode'] = $this->getCountryCode($paymentObjData);
 
-        $discountAmount = $cart->getOrderTotal(true, Cart::ONLY_DISCOUNTS);
+        $paymentObjData['discountAmount'] = $paymentObjData['cart']->getOrderTotal(true, Cart::ONLY_DISCOUNTS);
 
-        /** @var Carrier $carrier */
-        $carrier = new Carrier($cart->id_carrier);
+        /** @var Carrier $paymentObjData['carrier'] */
+        $paymentObjData['carrier'] = new Carrier($paymentObjData['cart']->id_carrier);
 
-        /** @var Customer $customer */
-        $customer = $context->customer;
+        /** @var Customer $paymentObjData['customer'] */
+        $paymentObjData['customer'] = $context->customer;
 
-        if (!$cart->id) {
+        if (!$paymentObjData['cart']->id) {
             Tools::redirect('index.php?controller=order');
         }
 
-        $urlToken = Tools::strtoupper(md5(uniqid(rand(), true)));
+        $paymentObjData['urlToken'] = Tools::strtoupper(md5(uniqid(rand(), true)));
 
-        $query = array(
-            'id_cart' => $cart->id,
-            'key' => $cart->secure_key,
-        );
-
-        $koUrl = $context->link->getPageLink(
+        $paymentObjData['koUrl'] = $context->link->getPageLink(
             'order',
             null,
             null,
             array('step'=>3)
         );
-        $cancelUrl = (Configuration::get('CLEARPAY_URL_KO') !== '') ? Configuration::get('CLEARPAY_URL_KO') : $koUrl;
+        $paymentObjData['cancelUrl'] = (Configuration::get('CLEARPAY_URL_KO') !== '') ?
+            Configuration::get('CLEARPAY_URL_KO') : $paymentObjData['koUrl'];
+        $paymentObjData['publicKey'] = Configuration::get('CLEARPAY_PUBLIC_KEY');
+        $paymentObjData['secretKey'] = Configuration::get('CLEARPAY_SECRET_KEY');
+        $paymentObjData['environment'] = Configuration::get('CLEARPAY_ENVIRONMENT');
 
-        $publicKey = Configuration::get('CLEARPAY_PUBLIC_KEY');
-        $secretKey = Configuration::get('CLEARPAY_SECRET_KEY');
-        $environment = Configuration::get('CLEARPAY_ENVIRONMENT');
-
-        $okUrl = _PS_BASE_URL_SSL_.__PS_BASE_URI__
+        $query = array(
+            'id_cart' => $paymentObjData['cart']->id,
+            'key' => $paymentObjData['cart']->secure_key,
+        );
+        $paymentObjData['okUrl'] = _PS_BASE_URL_SSL_.__PS_BASE_URI__
             .'index.php?canonical=true&fc=module&module=clearpay&controller=notify'
-            .'&token='.$urlToken . '&' . http_build_query($query)
+            .'&token='.$paymentObjData['urlToken'] . '&' . http_build_query($query)
         ;
-
         \Afterpay\SDK\Model::setAutomaticValidationEnabled(true);
-        $createCheckoutRequest = new CreateCheckout();
+        $clearpayPaymentObj = new CreateCheckout();
         $clearpayMerchantAccount = new ClearpayMerchantAccount();
-        $countryCode = $this->getCountryCode();
         $clearpayMerchantAccount
-            ->setMerchantId($publicKey)
-            ->setSecretKey($secretKey)
-            ->setApiEnvironment($environment)
+            ->setMerchantId($paymentObjData['publicKey'])
+            ->setSecretKey($paymentObjData['secretKey'])
+            ->setApiEnvironment($paymentObjData['environment'])
         ;
-        if (!is_null($countryCode)) {
-            $clearpayMerchantAccount->setCountryCode($countryCode);
+        if (!is_null($paymentObjData['countryCode'])) {
+            $clearpayMerchantAccount->setCountryCode($paymentObjData['countryCode']);
         }
 
-        $createCheckoutRequest
+        $clearpayPaymentObj
             ->setMerchant(array(
-                'redirectConfirmUrl' => $okUrl,
-                'redirectCancelUrl' => $cancelUrl
+                'redirectConfirmUrl' => $paymentObjData['okUrl'],
+                'redirectCancelUrl' => $paymentObjData['cancelUrl']
             ))
             ->setMerchantAccount($clearpayMerchantAccount)
+            ->setAmount(
+                Clearpay::parseAmount($paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)),
+                $paymentObjData['currency']
+            )
             ->setTaxAmount(
                 Clearpay::parseAmount(
-                    $cart->getOrderTotal(true, Cart::BOTH) - $cart->getOrderTotal(false, Cart::BOTH)
+                    $paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)
+                    -
+                    $paymentObjData['cart']->getOrderTotal(false, Cart::BOTH)
                 ),
-                $currency
+                $paymentObjData['currency']
             )
             ->setConsumer(array(
-                'phoneNumber' => $billingAddress->phone,
-                'givenNames' => $customer->firstname,
-                'surname' => $customer->lastname,
-                'email' => $customer->email
+                'phoneNumber' => $paymentObjData['billingAddress']->phone,
+                'givenNames' => $paymentObjData['customer']->firstname,
+                'surname' => $paymentObjData['customer']->lastname,
+                'email' => $paymentObjData['customer']->email
             ))
             ->setBilling(array(
-                'name' => $billingAddress->firstname . " " . $billingAddress->lastname,
-                'line1' => $billingAddress->address1,
-                'line2' => $billingAddress->address2,
-                'suburb' => $billingAddress->city,
-                'state' => $billingStateCode,
-                'postcode' => $billingAddress->postcode,
-                'countryCode' => $billingCountryCode,
-                'phoneNumber' => $billingAddress->phone
+                'name' => $paymentObjData['billingAddress']->firstname . " " .
+                    $paymentObjData['billingAddress']->lastname,
+                'line1' => $paymentObjData['billingAddress']->address1,
+                'line2' => $paymentObjData['billingAddress']->address2,
+                'suburb' => $paymentObjData['billingAddress']->city,
+                'state' => $paymentObjData['billingStateCode'],
+                'postcode' => $paymentObjData['billingAddress']->postcode,
+                'countryCode' => $paymentObjData['billingCountryCode'],
+                'phoneNumber' => $paymentObjData['billingAddress']->phone
             ))
             ->setShipping(array(
-                'name' => $shippingAddress->firstname . " " . $shippingAddress->lastname,
-                'line1' => $shippingAddress->address1,
-                'line2' => $shippingAddress->address2,
-                'suburb' => $shippingAddress->city,
-                'state' => $shippingStateCode,
-                'postcode' => $shippingAddress->postcode,
-                'countryCode' => $shippingCountryCode,
-                'phoneNumber' => $shippingAddress->phone
+                'name' => $paymentObjData['shippingAddress']->firstname . " " .
+                    $paymentObjData['shippingAddress']->lastname,
+                'line1' => $paymentObjData['shippingAddress']->address1,
+                'line2' => $paymentObjData['shippingAddress']->address2,
+                'suburb' => $paymentObjData['shippingAddress']->city,
+                'state' => $paymentObjData['shippingStateCode'],
+                'postcode' => $paymentObjData['shippingAddress']->postcode,
+                'countryCode' => $paymentObjData['shippingCountryCode'],
+                'phoneNumber' => $paymentObjData['shippingAddress']->phone
             ))
             ->setShippingAmount(
-                Clearpay::parseAmount($cart->getTotalShippingCost()),
-                $currency
+                Clearpay::parseAmount($paymentObjData['cart']->getTotalShippingCost()),
+                $paymentObjData['currency']
             )
             ->setCourier(array(
                 'shippedAt' => '',
-                'name' => $carrier->name,
+                'name' => $paymentObjData['carrier']->name,
                 'tracking' => '',
                 'priority' => 'STANDARD'
             ));
 
-        $createCheckoutRequest->setTotalAmount(
-            Clearpay::parseAmount($cart->getOrderTotal(true, Cart::BOTH)),
-            $currency
-        );
-
-//        if ($apiVersion === 'v2') {
-//            $createCheckoutRequest->setAmount(
-//                Clearpay::parseAmount($cart->getOrderTotal(true, Cart::BOTH)),
-//                $currency
-//            );
-//        }
-        if (!empty($discountAmount)) {
-            $createCheckoutRequest->setDiscounts(array(
+        if (!empty($paymentObjData['discountAmount'])) {
+            $clearpayPaymentObj->setDiscounts(array(
                 array(
                     'displayName' => 'Shop discount',
-                    'amount' => array(Clearpay::parseAmount($discountAmount), $currency)
+                    'amount' => array(
+                        Clearpay::parseAmount($paymentObjData['discountAmount']),
+                        $paymentObjData['currency']
+                    )
                 )
             ));
         }
 
-        $items = $cart->getProducts();
+        $items = $paymentObjData['cart']->getProducts();
         $products = array();
         foreach ($items as $item) {
             $products[] = array(
@@ -177,74 +203,110 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                 'quantity' => (int) $item['quantity'],
                 'price' => array(
                     'amount' => Clearpay::parseAmount($item['price_wt']),
-                    'currency' => $currency
+                    'currency' => $paymentObjData['currency']
                 )
             );
         }
-        $createCheckoutRequest->setItems($products);
+        $clearpayPaymentObj->setItems($products);
 
-        $header = $this->module->name . '/' . $this->module->version
-            . '(Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() . '; Merchant/' . $publicKey
-            . ') ' . _PS_BASE_URL_SSL_.__PS_BASE_URI__;
-        $createCheckoutRequest->addHeader('User-Agent', $header);
-        $createCheckoutRequest->addHeader('Country', $countryCode);
-        $url = $cancelUrl;
-        if ($createCheckoutRequest->isValid()) {
-            $endPoint = ($apiVersion === 'v2') ? "checkouts": "orders";
-            $createCheckoutRequest->setUri("/$apiVersion/$endPoint");
-            $createCheckoutRequest->send();
-            $errorMessage = 'empty response';
-            if ($createCheckoutRequest->getResponse()->getHttpStatusCode() >= 400
-                || isset($createCheckoutRequest->getResponse()->getParsedBody()->errorCode)
-            ) {
-                if (isset($createCheckoutRequest->getResponse()->getParsedBody()->message)) {
-                    $errorMessage = $createCheckoutRequest->getResponse()->getParsedBody()->message;
-                }
-                $errorMessage .= $this->l('. Status code: ')
-                    . $createCheckoutRequest->getResponse()->getHttpStatusCode()
-                ;
-                $this->saveLog(
-                    $this->l('Error received when trying to create a order: ') .
-                    $errorMessage,
-                    2
-                );
-            } else {
-                try {
-                    $url = $createCheckoutRequest->getResponse()->getParsedBody()->redirectCheckoutUrl;
-                    $orderId = $createCheckoutRequest->getResponse()->getParsedBody()->token;
-                    $countryCode = $this->getCountryCode();
-                    $cartId = pSQL($cart->id);
-                    $orderId = pSQL($orderId);
-                    $urlToken = pSQL($urlToken);
-                    $countryCode = pSQL($countryCode);
-                    $sql = "INSERT INTO `" . _DB_PREFIX_ . "clearpay_order` (`id`, `order_id`, `token`, `country_code`) 
-                    VALUES ('$cartId','$orderId', '$urlToken', '$countryCode')";
-                    $result = Db::getInstance()->execute($sql);
-                    if (!$result) {
-                        throw new \Exception('Unable to save clearpay-order-id in database: '. $sql);
-                    }
-                } catch (\Exception $exception) {
-                    $this->saveLog($exception->getMessage(), 3);
-                    $url = $cancelUrl;
-                }
-            }
+        $apiVersion = $this->getApiVersionPerRegion($paymentObjData['region']);
+        if ($apiVersion === 'v1') {
+            $clearpayPaymentObj = $this->addPaymentV1Options($clearpayPaymentObj, $paymentObjData);
         } else {
-            $this->saveLog($createCheckoutRequest->getValidationErrors(), null, 2);
+            $clearpayPaymentObj = $this->addPaymentV2Options($clearpayPaymentObj, $paymentObjData);
         }
 
-        Tools::redirect($url);
+        $header = $this->module->name . '/' . $this->module->version
+            . '(Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() . '; Merchant/' . $paymentObjData['publicKey']
+            . ') ' . _PS_BASE_URL_SSL_.__PS_BASE_URI__;
+        $clearpayPaymentObj->addHeader('User-Agent', $header);
+        $clearpayPaymentObj->addHeader('Country', $paymentObjData['countryCode']);
+
+        $url = $paymentObjData['cancelUrl'];
+        if (!$clearpayPaymentObj->isValid()) {
+            $this->saveLog($clearpayPaymentObj->getValidationErrors(), 2);
+            return Tools::redirect($url);
+        }
+
+        $endPoint = '/' . $apiVersion . '/';
+        $endPoint .= ($apiVersion === 'v2') ? "checkouts": "orders";
+        $clearpayPaymentObj->setUri($endPoint);
+
+        $clearpayPaymentObj->send();
+        $errorMessage = 'empty response';
+        if ($clearpayPaymentObj->getResponse()->getHttpStatusCode() >= 400
+            || isset($clearpayPaymentObj->getResponse()->getParsedBody()->errorCode)
+        ) {
+            if (isset($clearpayPaymentObj->getResponse()->getParsedBody()->message)) {
+                $errorMessage = $clearpayPaymentObj->getResponse()->getParsedBody()->message;
+            }
+            $errorMessage .= $this->l('. Status code: ')
+                . $clearpayPaymentObj->getResponse()->getHttpStatusCode()
+            ;
+            $this->saveLog(
+                $this->l('Error received when trying to create a order: ') .
+                $errorMessage . '. URL: ' . $clearpayPaymentObj->getApiEnvironmentUrl().$clearpayPaymentObj->getUri(),
+                2
+            );
+
+            return Tools::redirect($url);
+        }
+
+        try {
+            $url = $clearpayPaymentObj->getResponse()->getParsedBody()->redirectCheckoutUrl;
+            $orderId = $clearpayPaymentObj->getResponse()->getParsedBody()->token;
+            $cartId = pSQL($paymentObjData['cart']->id);
+            $orderId = pSQL($orderId);
+            $urlToken = pSQL($paymentObjData['urlToken']);
+            $countryCode = pSQL($paymentObjData['countryCode']);
+            $sql = "INSERT INTO `" . _DB_PREFIX_ . "clearpay_order` (`id`, `order_id`, `token`, `country_code`) 
+            VALUES ('$cartId','$orderId', '$urlToken', '$countryCode')";
+            $result = Db::getInstance()->execute($sql);
+            if (!$result) {
+                throw new \Exception('Unable to save clearpay-order-id in database: '. $sql);
+            }
+        } catch (\Exception $exception) {
+            $this->saveLog($exception->getMessage(), 3);
+            $url = $paymentObjData['cancelUrl'];
+        }
+
+        return Tools::redirect($url);
     }
 
     /**
-     * @param null $shippingAddress
-     * @param null $billingAddress
-     * @return mixed
+     * @param CreateCheckout $clearpayPaymentObj
+     * @param array $paymentObjData
+     * @return CreateCheckout
      */
-    private function getCountryCode()
+    private function addPaymentV1Options(CreateCheckout $clearpayPaymentObj, $paymentObjData)
     {
-        $context = Context::getContext();
-        $cart = $context->cart;
+        $clearpayPaymentObj->setTotalAmount(
+            Clearpay::parseAmount($paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)),
+            $paymentObjData['currency']
+        );
+        return $clearpayPaymentObj;
+    }
 
+    /**
+     * @param CreateCheckout $clearpayPaymentObj
+     * @param array $paymentObjData
+     * @return CreateCheckout
+     */
+    private function addPaymentV2Options(CreateCheckout $clearpayPaymentObj, $paymentObjData)
+    {
+        $clearpayPaymentObj->setAmount(
+            Clearpay::parseAmount($paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)),
+            $paymentObjData['currency']
+        );
+        return $clearpayPaymentObj;
+    }
+
+    /**
+     * @param array $paymentObjData
+     * @return string|null
+     */
+    private function getCountryCode($paymentObjData)
+    {
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         $lang = Language::getLanguage($this->context->language->id);
         $langArray = explode("-", $lang['language_code']);
@@ -257,16 +319,16 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             return $language;
         }
 
-        $shippingAddress = new Address($cart->id_address_delivery);
+        $shippingAddress = new Address($paymentObjData['cart']->id_address_delivery);
         if ($shippingAddress) {
-            $language = Country::getIsoById($shippingAddress->id_country);
+            $language = Country::getIsoById($paymentObjData['shippingAddress']->id_country);
             if (in_array(Tools::strtoupper($language), $allowedCountries)) {
                 return $language;
             }
         }
-        $billingAddress = new Address($cart->id_address_invoice);
+        $billingAddress = new Address($paymentObjData['cart']->id_address_invoice);
         if ($billingAddress) {
-            $language = Country::getIsoById($billingAddress->id_country);
+            $language = Country::getIsoById($paymentObjData['billingAddress']->id_country);
             if (in_array(Tools::strtoupper($language), $allowedCountries)) {
                 return $language;
             }

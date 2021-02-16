@@ -23,7 +23,7 @@ class Clearpay extends PaymentModule
     /**
      * Available currency
      */
-    const CLEARPAY_AVAILABLE_CURRENCIES = 'EUR,GBP';
+    const CLEARPAY_AVAILABLE_CURRENCIES = 'USD,EUR,GBP';
 
     /**
      * Available currency
@@ -54,8 +54,12 @@ class Clearpay extends PaymentModule
      * @var array
      */
     public $defaultCountriesPerRegion = array(
+        'AU' => '["AU"]',
+        'CA' => '["CA"]',
+        'ES' => '["ES", "IT", "FR"]',
         'GB' => '["GB"]',
-        'US' => '["US"]'
+        'NZ' => '["NZ"]',
+        'US' => '["US"]',
     );
 
     /**
@@ -135,8 +139,6 @@ class Clearpay extends PaymentModule
         Configuration::updateValue('CLEARPAY_CSS_SELECTOR', 'default');
         Configuration::updateValue('CLEARPAY_URL_OK', '');
         Configuration::updateValue('CLEARPAY_URL_KO', '');
-        Configuration::updateValue('CLEARPAY_API_VERSION', 'v1');
-
 
         $return =  (parent::install()
             && $this->registerHook('paymentOptions')
@@ -585,7 +587,7 @@ class Clearpay extends PaymentModule
 
         if (Tools::isSubmit('submit'.$this->name)) {
             foreach ($settingsKeys as $key) {
-                $value = Tools::getValue($key);
+                $value = trim(Tools::getValue($key));
                 if (is_array($value)) {
                     $value = json_encode($value);
                 }
@@ -795,7 +797,6 @@ class Clearpay extends PaymentModule
         $cart = $this->context->cart;
         $currency = new Currency($cart->id_currency);
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
-
         $availableCurrencies = explode(",", self::CLEARPAY_AVAILABLE_CURRENCIES);
         $language = $this->getCurrentLanguage();
         if ($isEnabled &&

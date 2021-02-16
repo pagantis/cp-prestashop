@@ -155,7 +155,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         try {
             $this->unblockConcurrency($this->merchantCartId);
         } catch (\Exception $exception) {
-            $this->saveLog($exception->getMessage(), null, 2);
+            $this->saveLog($exception->getMessage(), 2);
         }
 
         return $this->finishProcess(false);
