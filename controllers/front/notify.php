@@ -27,7 +27,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
     /**
      * Seconds to expire a locked request
      */
-    const CONCURRENCY_TIMEOUT = 10;
+    const CONCURRENCY_TIMEOUT = 1;
 
     /**
      * mismatch amount threshold in cents
@@ -99,6 +99,19 @@ class ClearpayNotifyModuleFrontController extends AbstractController
      * @var mixed $config
      */
     protected $config;
+    /**
+     * Default API Version per region
+     *
+     * @var array
+     */
+    public $defaultApiVersionPerRegion = array(
+        'AU' => 'v2',
+        'CA' => 'v2',
+        'ES' => 'v1',
+        'GB' => 'v2',
+        'NZ' => 'v2',
+        'US' => 'v2',
+    );
 
     /**
      * @var Object $jsonResponse
@@ -115,6 +128,18 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         if (in_array($func, array('l')) && !method_exists($this, $func)) {
             return $params[0];
         }
+    }
+
+    /**
+     * @param $region
+     * @return string
+     */
+    public function getApiVersionPerRegion($region = '')
+    {
+        if (isset($this->defaultApiVersionPerRegion[$region])) {
+            return $this->defaultApiVersionPerRegion[$region];
+        }
+        return json_encode(array($region));
     }
 
     /**
@@ -202,6 +227,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         $this->config['privateKey'] = Configuration::get('CLEARPAY_SECRET_KEY');
         $this->config['environment'] = Configuration::get('CLEARPAY_ENVIRONMENT');
         $this->config['region'] = Configuration::get('CLEARPAY_REGION');
+        $this->config['apiVersion'] = $this->getApiVersionPerRegion($this->config['region']);
 
         $this->merchantOrderId = $this->getMerchantOrderId();
 
@@ -296,9 +322,11 @@ class ClearpayNotifyModuleFrontController extends AbstractController
     private function getClearpayOrder()
     {
         $getOrderRequest = new ClearpayRequest();
+        $uri = '/' . $this->config['apiVersion'] . '/';
+        $uri .= ($this->config['apiVersion'] === 'v1') ? 'orders/' : 'checkouts/';
         $getOrderRequest
             ->setMerchantAccount($this->clearpayMerchantAccount)
-            ->setUri("/v1/orders/" . $this->clearpayOrderId)
+            ->setUri($uri . $this->clearpayOrderId)
         ;
         $getOrderRequest->send();
 
@@ -315,10 +343,15 @@ class ClearpayNotifyModuleFrontController extends AbstractController
      */
     public function validateAmount()
     {
-        $totalAmount = (string) $this->clearpayOrder->totalAmount->amount;
+        if ($this->config['apiVersion'] === 'v1') {
+            $cpAmount = $this->clearpayOrder->totalAmount->amount;
+        } else {
+            $cpAmount = $this->clearpayOrder->amount->amount;
+        }
+        $totalAmount = (string) $cpAmount;
         $merchantAmount = (string) ($this->merchantCart->getOrderTotal(true, Cart::BOTH));
         if ($totalAmount != $merchantAmount) {
-            $numberClearpayAmount = (integer) (100 * $this->clearpayOrder->totalAmount->amount);
+            $numberClearpayAmount = (integer) (100 * $cpAmount);
             $numberMerchantAmount = (integer) (100 * $this->merchantCart->getOrderTotal(true, Cart::BOTH));
             $amountDff =  $numberMerchantAmount - $numberClearpayAmount;
             if (abs($amountDff) > self::MISMATCH_AMOUNT_THRESHOLD) {
@@ -383,7 +416,8 @@ class ClearpayNotifyModuleFrontController extends AbstractController
             'merchantReference' => $this->config['publicKey']
         ));
         $immediatePaymentCaptureRequest->setMerchantAccount($this->clearpayMerchantAccount);
-        $immediatePaymentCaptureRequest->setUri("/v1/payments/capture");
+        $uri = '/' . $this->config['apiVersion'] . '/payments/capture/';
+        $immediatePaymentCaptureRequest->setUri($uri);
         $immediatePaymentCaptureRequest->send();
         if ($immediatePaymentCaptureRequest->getResponse()->getHttpStatusCode() >= 400) {
             $this->paymentDeclined = true;
@@ -408,11 +442,16 @@ class ClearpayNotifyModuleFrontController extends AbstractController
      */
     public function processMerchantOrder()
     {
+        if ($this->config['apiVersion'] === 'v1') {
+            $cpAmount = $this->clearpayOrder->totalAmount->amount;
+        } else {
+            $cpAmount = $this->clearpayOrder->amount->amount;
+        }
         try {
             $this->module->validateOrder(
                 $this->merchantCartId,
                 Configuration::get('PS_OS_PAYMENT'),
-                $this->clearpayOrder->totalAmount->amount,
+                $cpAmount,
                 $this->productName,
                 'clearpayOrderId: ' .  $this->clearpayCapturedPaymentId,
                 array('transaction_id' => $this->clearpayCapturedPaymentId),
@@ -499,15 +538,15 @@ class ClearpayNotifyModuleFrontController extends AbstractController
 
     /**
      * Lock the concurrency to prevent duplicated inputs
-     * @param $orderId
+     * @param $cartId
      *
      * @throws Exception
      */
-    protected function blockConcurrency($orderId)
+    protected function blockConcurrency($cartId)
     {
         try {
             $table = self::CART_TABLE;
-            Db::getInstance()->insert($table, array('id' =>(int)$orderId, 'timestamp' =>(time())));
+            Db::getInstance()->insert($table, array('id' =>(int)$cartId, 'timestamp' =>(time())));
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage());
         }
