@@ -21,7 +21,7 @@
     .payment-option img[src*='clearpay'] {
         height: 25px;
         padding-left: 5px;
-        content:url('{$LOGO|escape:'htmlall':'UTF-8'}');
+        content:url('{$LOGO_BADGE|escape:'htmlall':'UTF-8'}');
     }
     p.payment_module a.clearpay-checkout.ps_version_1-6 {
         background-color: #fbfbfb;
@@ -121,7 +121,7 @@
             <p class="payment_module">
                 <a class="clearpay-checkout clearpay-checkout ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" href="{$PAYMENT_URL|escape:'htmlall':'UTF-8'}">
                     {$TITLE|escape:'htmlall':'UTF-8'}
-                    <img class="clearpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo" src="{$LOGO|escape:'htmlall':'UTF-8'}">
+                    <img class="clearpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo" src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
                 </a>
             </p>
         </div>
@@ -132,7 +132,7 @@
     <div class="payment-method ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method" >
         <div class="payment-method-content clearpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method-content">
             <div class="clearpay-header">
-                <img src="{$LOGO|escape:'htmlall':'UTF-8'}"> {$MOREINFO_HEADER|escape:'htmlall':'UTF-8'}
+                <img src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}"> {$MOREINFO_HEADER|escape:'htmlall':'UTF-8'}
             </div>
             <div class="clearpay-more-info-text">
                 <div class="clearpay-more-info">
