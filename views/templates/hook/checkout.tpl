@@ -23,6 +23,11 @@
         padding-left: 5px;
         content:url('{$LOGO|escape:'htmlall':'UTF-8'}');
     }
+    .payment-option img[src*='pagantis'] {
+        height: 25px;
+        padding-left: 5px;
+        content:url('{$LOGO|escape:'htmlall':'UTF-8'}');
+    }
     p.payment_module a.clearpay-checkout.ps_version_1-6 {
         background-color: #fbfbfb;
         max-height: 90px;
@@ -58,7 +63,8 @@
         background-color: #b2fce4;
     }
     .clearpay-header img {
-        height: 40px;
+        max-width: 118px;
+        max-height: 40px;
         position: absolute;
         top: 0px;
         left: 5px;

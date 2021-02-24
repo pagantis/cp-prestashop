@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/afterpay/sdk-php.git",
-                "reference": "c69b1108fa368151d64b83101021094580368b1b"
+                "reference": "8c837cce2de5dfbd44b8573fdc3b261694ef1790"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/afterpay/sdk-php/zipball/c69b1108fa368151d64b83101021094580368b1b",
-                "reference": "c69b1108fa368151d64b83101021094580368b1b",
+                "url": "https://api.github.com/repos/afterpay/sdk-php/zipball/8c837cce2de5dfbd44b8573fdc3b261694ef1790",
+                "reference": "8c837cce2de5dfbd44b8573fdc3b261694ef1790",
                 "shasum": ""
             },
             "require-dev": {
@@ -42,7 +42,7 @@
                 }
             ],
             "description": "Official Afterpay SDK for PHP",
-            "time": "2020-12-10T08:40:01+00:00"
+            "time": "2021-02-22T08:40:55+00:00"
         }
     ],
     "packages-dev": [
@@ -1445,7 +1445,7 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.22.0",
+            "version": "v1.22.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
