@@ -686,7 +686,21 @@ class Clearpay extends PaymentModule
 
         $logo = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo.png');
         $tpl = $this->local_path.'views/templates/admin/config-info.tpl';
+        $header = $this->l('Clearpay Configuration Panel');
+        $button1 = $this->l('Contact us');
+        $button2 = $this->l('Getting started');
+        $centeredText = '<strong>'. $this->l('1. Before getting started:') . '</strong>' .
+            $this->l(' Do you want to know more about Clearpay?') .
+            $this->l(' Fill in the following contact form and our sales team will reach out to you.') .
+            '<br><br><strong>'. $this->l('2. Getting started:') . '</strong>' .
+            $this->l(' Are you ready to integrate Clearpay?') .
+            $this->l(' If you have been in contact with our sales team and have signed our contract ') .
+            $this->l(' click on the following link to get started.');
         $this->context->smarty->assign(array(
+            'header' => $header,
+            'button1' => $button1,
+            'button2' => $button2,
+            'centered_text' => $centeredText,
             'logo' => $logo,
             'form' => '',
             'message' => $message,

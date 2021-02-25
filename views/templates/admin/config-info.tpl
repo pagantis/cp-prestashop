@@ -11,19 +11,20 @@
         .column-left {
             text-align: left;
             float: left;
-            width: 33%;
+            width: 20%;
         }
 
         .column-right {
             text-align: right;
             float: right;
-            width: 33%;
+            width: 20%;
         }
 
         .column-center {
-            text-align: center;
+            text-align: left;
             display: inline-block;
-            width: 33%;
+            width: 60%;
+            line-height: 18px;
         }
         .clearpay-content-form {
             overflow-x: hidden;
@@ -54,14 +55,14 @@
     </style>
     {$message|escape:'quotes':'UTF-8'}
     <div class="panel clearpay-content-form">
-        <h3><i class="icon icon-credit-card"></i> {l s='Clearpay Configuration Panel' mod='clearpay'}</h3>
+        <h3><i class="icon icon-credit-card"></i> {$header|escape:'htmlall':'UTF-8'}</h3>
         <div class="column-left">
-            <a target="_blank" href="{l s='https://portal.sandbox.clearpay.co.uk/uk/merchant' mod='clearpay'}" class="btn btn-default" title="Login Clearpay"><i class="icon-user"></i> {l s='Clearpay Backoffice Login' mod='clearpay'}</a><br>
-            <a target="_blank" href="{l s='https://developers.clearpay.co.uk/clearpay-online/docs/platforms-quickstart' mod='clearpay'}" class="btn btn-default second" title="Getting Star"><i class="icon-user"></i> {l s='Getting Started' mod='clearpay'}</a>
+            <a target="_blank" href="{l s='https://retailers.afterpay.com/uk/prestashop/?utm_source=prestashop&utm_medium=referral&utm_campaign=global_prestashop-lead-referrals_campaign_DEC-2020&utm_content=contact-us' mod='clearpay'}" class="btn btn-default" title="Login Clearpay"><i class="icon-user"></i> {$button1|escape:'htmlall':'UTF-8'}</a><br>
+            <a target="_blank" href="{l s='https://developers.clearpay.com/docs/getting-started-with-clearpay-online' mod='clearpay'}" class="btn btn-default second" title="Getting Star"><i class="icon-user"></i> {$button2|escape:'htmlall':'UTF-8'}</a>
         </div>
         <div class="column-center">
             <p>
-                {l s='Clearpay configuration panel, please take your time to configure the payment method behavior' mod='clearpay'}ted
+                {$centered_text|escape:'quotes':'UTF-8'}
             </p>
         </div>
         <div class="column-right">
