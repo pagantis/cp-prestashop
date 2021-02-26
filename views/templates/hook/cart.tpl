@@ -5,6 +5,14 @@
  * @copyright 2020 Clearpay
  * @license   proprietary
  *}
+<!-- Afterpay.js  -->
+<script
+        src="{$SDK_URL|escape:'javascript':'UTF-8'}"
+        data-min="{$CLEARPAY_MIN_AMOUNT|escape:'javascript':'UTF-8'}"
+        data-max="{$CLEARPAY_MAX_AMOUNT|escape:'javascript':'UTF-8'}"
+        async>
+</script>
+<!-- Afterpay.js -->
 <style>
     .payment-method-note.clearpay-cart-note {
         padding: 20px 0 10px 0;
@@ -33,17 +41,25 @@
 
 </style>
 <div class="payment-method-note clearpay-cart-note ps-{$PS_VERSION|escape:'htmlall':'UTF-8'}" style="">
-    <span class="clearpay-price-text">
-        {$PRICE_TEXT|escape:'htmlall':'UTF-8'} {$AMOUNT_WITH_CURRENCY|escape:'htmlall':'UTF-8'}
-    </span>
-    <br><br>
-    <span>{$DESCRIPTION_TEXT_ONE|escape:'htmlall':'UTF-8'}</span>
+    <div class="ClearpaySimulator ps-version-{$PS_VERSION|escape:'htmlall':'UTF-8'}">
+        <style>
+            afterpay-placement {
+                white-space: break-spaces;
+                color: black;
+                font-weight: bold;
+            }
+        </style>
+        <afterpay-placement
+                data-locale="{$ISO_COUNTRY_CODE|escape:'htmlall':'UTF-8'}"
+                data-currency="{$CURRENCY|escape:'htmlall':'UTF-8'}"
+                data-amount-selector="{$PRICE_SELECTOR|escape:'htmlall':'UTF-8'}"
+                data-size="sm"
+                data-intro-text="false"
+                data-show-interest-free="false">
+        </afterpay-placement>
+    </div>
+    <span><strong>{$DESCRIPTION_TEXT_ONE|escape:'htmlall':'UTF-8'}</strong></span>
     <br><br>
     <span>{$DESCRIPTION_TEXT_TWO|escape:'htmlall':'UTF-8'}</span>
     <br/>
-    <div class="clearpay-more-info">
-		<br/> <a href="javascript:void(0)" onclick="Afterpay.launchModal('{$ISO_COUNTRY_CODE|escape:'javascript':'UTF-8'}');">
-            {$MORE_INFO|escape:'htmlall':'UTF-8'}
-        </a>
-	</div>
 </div>

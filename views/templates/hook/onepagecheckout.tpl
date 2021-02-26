@@ -40,16 +40,29 @@
     .clearpay-header {
         color: #7a7a7a;
         position: relative;
-        line-height: 40px;
-        text-align: right;
-        padding-right: 20px;
+        text-align: center;
+        padding-right: 10px;
         background-color: #b2fce4;
+        padding-bottom: 10px;
     }
     .clearpay-header img {
         height: 40px;
-        position: absolute;
-        top: 0px;
-        left: 5px;
+        padding-right: 10px;
+    }
+
+    .clearpay-header-img {
+        display: inline;
+    }
+
+    .clearpay-header-text1 {
+        display: inline;
+        text-align: center;
+        color: black;
+        font-weight: bold;
+    }
+    .clearpay-header-text2 {
+        display: inline-block;
+        text-align: center;
     }
     .clearpay-checkout-ps1-6-logo {
         height: 45px;
@@ -58,7 +71,7 @@
         position: absolute;
     }
     .clearpay-more-info-text {
-        padding: 1em 3em;
+        padding: 1em 1em;
         text-align: center;
     }
     .clearpay-more-info {
@@ -71,7 +84,6 @@
     @media only screen and (max-width: 1200px) {
         .clearpay-header {
             text-align: center;
-            padding-top: 30px;
             display: block;
             height: 65px !important;
         }
@@ -102,7 +114,7 @@
             left:28%;
         }
         .clearpay-header {
-            height: 100px !important;
+            height: 70px !important;
         }
     }
 </style>
@@ -123,7 +135,15 @@
     <div class="payment-method ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method" >
         <div class="payment-method-content clearpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method-content">
             <div class="clearpay-header">
-                <img src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}"> {$MOREINFO_HEADER|escape:'htmlall':'UTF-8'}
+                <div class="clearpay-header-img">
+                    <img src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
+                </div>
+                <div class="clearpay-header-text1">
+                    {$MORE_HEADER1|escape:'htmlall':'UTF-8'}
+                </div>
+                <div class="clearpay-header-text2">
+                    {$MORE_HEADER2|escape:'htmlall':'UTF-8'}
+                </div>
             </div>
             <div class="clearpay-more-info-text">
                 <div class="clearpay-more-info">

@@ -344,11 +344,8 @@ class Clearpay extends PaymentModule
                     Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 2, 4));
             }
             $templateConfigs['CURRENCY'] = $this->currency;
-            $templateConfigs['MOREINFO_HEADER'] = $this->l('Instant approval decision - 4 interest-free payments of')
-                . ' ' . $amountWithCurrency;
-            if ($this->isOPC()) {
-                $templateConfigs['MOREINFO_HEADER'] = $this->l("Buy now, Pay later.");
-            }
+            $templateConfigs['MORE_HEADER1'] = $this->l('Always interest-free.');
+            $templateConfigs['MORE_HEADER2'] = $this->l('No extra documentation. Instant aproval.');
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
             $moreInfo = $this->l('You will be redirected to Clearpay website to fill out your payment information.');
             $moreInfo .= ' ' .$this->l('You will be redirected to our site to complete your order. Please note: ');
@@ -361,6 +358,7 @@ class Clearpay extends PaymentModule
             $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $this->l(
                 'https://www.clearpay.co.uk/en-GB/terms-of-service'
             );
+            $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/app_icon.png');
             $templateConfigs['LOGO_BADGE'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo.png');
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
@@ -742,7 +740,7 @@ class Clearpay extends PaymentModule
                     . $this->l(' with Clearpay');
             }
             $templateConfigs['TITLE'] = $checkoutText;
-            $templateConfigs['MOREINFO_HEADER'] = $this->l('Instant approval decision - 4 interest-free payments of')
+            $templateConfigs['MORE_HEADER'] = $this->l('Instant approval decision - 4 interest-free payments of')
                 . ' ' . $amountWithCurrency;
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
             $templateConfigs['MOREINFO_ONE'] = $this->l(
@@ -754,6 +752,7 @@ class Clearpay extends PaymentModule
             $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $this->l(
                 'https://www.clearpay.co.uk/en-GB/terms-of-service'
             );
+            $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/app_icon.png');
             $templateConfigs['LOGO_BADGE'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo.png');
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
@@ -789,12 +788,11 @@ class Clearpay extends PaymentModule
             $templateConfigs['AMOUNT'] =  Clearpay::parseAmount($this->context->cart->getOrderTotal()/4);
             $templateConfigs['PRICE_TEXT'] = $this->l('4 interest-free payments of');
             $templateConfigs['MORE_INFO'] = $this->l('FIND OUT MORE');
-            $desc1 = $this->l('With Clearpay you can receive your order now and pay in 4 interest-free');
-            $desc1 .= ' ' . $this->l('equal fortnightly payments.');
-            $desc1 .= ' ' . $this->l('Available to customers in the United Kingdom with a debit or credit card.');
+            $desc1 = $this->l('Buy now. Pay later. No interest.');
             $templateConfigs['DESCRIPTION_TEXT_ONE'] = $desc1;
-            $desc2 = $this->l('When you click ”Checkout with Clearpay”');
-            $desc2 .= ' ' . $this->l('you will be redirected to Clearpay to complete your order.');
+            $desc2 = $this->l('With Clearpay you can enjoy your purchase now and pay in 4 installments. ');
+            $desc2 .= ' ' . $this->l(' No hidden cost. Choose Clearpay as your payment method in the check-out, ');
+            $desc2 .= ' ' . $this->l(' fill in a simple form, no documents needed, and pay later.');
             $templateConfigs['DESCRIPTION_TEXT_TWO'] = $desc2;
             $categoryRestriction = $this->isCartRestricted($this->context->cart);
             $simulatorIsEnabled = true;

@@ -18,6 +18,7 @@
     <style>
         afterpay-placement {
             white-space: break-spaces;
+            color: black;
         }
     </style>
     <afterpay-placement

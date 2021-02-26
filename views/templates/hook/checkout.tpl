@@ -52,22 +52,35 @@
     .clearpay-header {
         color: #7a7a7a;
         position: relative;
-        line-height: 40px;
-        text-align: right;
-        padding-right: 20px;
+        padding-right: 2px;
         background-color: #b2fce4;
     }
     .clearpay-header img {
-        height: 40px;
-        position: absolute;
-        top: 0px;
-        left: 5px;
+        height: 35px;
+        padding-right: 10px;
+    }
+    .clearpay-header-img {
+        display: inline;
+    }
+
+    .clearpay-header-text1 {
+        display: inline;
+        text-align: center;
+        color: black;
+        font-weight: bold;
+    }
+    .clearpay-header-text2 {
+        display: inline-block;
+        text-align: center;
     }
     .clearpay-checkout-ps1-6-logo {
         height: 45px;
         margin-left: 10px;
         top: 25%;
         position: absolute;
+    }
+    .clearpay-checkout-ps1-6-logo-text {
+        display: none;
     }
     .clearpay-more-info-text {
         padding: 1em 3em;
@@ -80,27 +93,26 @@
     @media only screen and (max-width: 1200px) {
         .clearpay-header {
             text-align: center;
-            padding-top: 30px;
             display: block;
             height: 65px !important;
         }
     }
     @media only screen and (max-width: 1200px) and (min-width: 990px)  {
         .clearpay-header img {
-            left:35%;
+            padding: 0;
         }
     }
     @media only screen and (max-width: 989px) and (min-width: 768px)  {
         .clearpay-header img {
-            left:30%;
+            padding: 0;
         }
         .clearpay-header {
-            height: 100px !important;
+            height: 70px !important;
         }
     }
     @media only screen and (max-width: 767px) and (min-width: 575px)  {
         .clearpay-header img {
-            left:35%;
+            padding: 0;
         }
         .clearpay-header {
             height: 65px !important;
@@ -108,10 +120,16 @@
     }
     @media only screen and (max-width: 575px) {
         .clearpay-header img {
-            left:28%;
+            padding: 0;
         }
         .clearpay-header {
-            height: 100px !important;
+            height: 80px !important;
+        }
+        .clearpay-checkout-ps1-6-logo {
+            display: none;
+        }
+        .clearpay-checkout-ps1-6-logo-text {
+            display: inline;
         }
     }
 </style>
@@ -122,6 +140,7 @@
                 <a class="clearpay-checkout clearpay-checkout ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" href="{$PAYMENT_URL|escape:'htmlall':'UTF-8'}">
                     {$TITLE|escape:'htmlall':'UTF-8'}
                     <img class="clearpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo" src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
+                    <span class="clearpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo-text">{$LOGO_TEXT|escape:'htmlall':'UTF-8'}</span>
                 </a>
             </p>
         </div>
@@ -132,7 +151,15 @@
     <div class="payment-method ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method" >
         <div class="payment-method-content clearpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method-content">
             <div class="clearpay-header">
-                <img src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}"> {$MOREINFO_HEADER|escape:'htmlall':'UTF-8'}
+                <div class="clearpay-header-img">
+                    <img src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
+                </div>
+                <div class="clearpay-header-text1">
+                    {$MORE_HEADER1|escape:'htmlall':'UTF-8'}
+                </div>
+                <div class="clearpay-header-text2">
+                    {$MORE_HEADER2|escape:'htmlall':'UTF-8'}
+                </div>
             </div>
             <div class="clearpay-more-info-text">
                 <div class="clearpay-more-info">
