@@ -778,10 +778,9 @@ class Clearpay extends PaymentModule
 
     /**
      * @param string $templateName
-     * @param null   $productId
      * @return false|string
      */
-    public function templateDisplay($templateName = '', $productId = null)
+    public function templateDisplay($templateName = '')
     {
         $templateConfigs = array();
         if ($templateName === 'cart.tpl') {
@@ -798,9 +797,7 @@ class Clearpay extends PaymentModule
             $categoryRestriction = $this->isCartRestricted($this->context->cart);
             $simulatorIsEnabled = true;
         } else {
-            if (is_null($productId)) {
-                $productId = Tools::getValue('id_product');
-            }
+            $productId = Tools::getValue('id_product');
             if (!$productId) {
                 return false;
             }
@@ -886,13 +883,6 @@ class Clearpay extends PaymentModule
      */
     public function hookDisplayProductPriceBlock($params)
     {
-        // $params['type'] = weight | price | after_price
-        //echo($params['type'] . $params['smarty']->template_resource);
-        if (isset($params['type']) && $params['type'] === 'unit_price' && isset($params['product'])) {
-            $productData = (array) $params['product'];
-            //print_r($productData);
-            return $this->templateDisplay('product-category.tpl', $params['product']['id_product']);
-        }
         if (isset($params['type']) && $params['type'] === 'after_price' &&
             isset($params['smarty']) && isset($params['smarty']->template_resource) &&
             (
