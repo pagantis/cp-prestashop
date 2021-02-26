@@ -93,7 +93,7 @@ class Clearpay extends PaymentModule
     {
         $this->name = 'clearpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.4';
+        $this->version = '1.0.5';
         $this->author = 'Clearpay';
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
@@ -846,7 +846,7 @@ class Clearpay extends PaymentModule
             $templateConfigs['AMOUNT_WITH_CURRENCY'] = $templateConfigs['AMOUNT'] . $this->currencySymbol;
             $templateConfigs['PRICE_SELECTOR'] = Clearpay::getExtraConfig('SIMULATOR_CSS_SELECTOR');
             if ($templateConfigs['PRICE_SELECTOR'] === 'default') {
-                $templateConfigs['PRICE_SELECTOR'] = '.current-price';
+                $templateConfigs['PRICE_SELECTOR'] = '.current-price :not(span.discount)';
                 if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
                     $templateConfigs['PRICE_SELECTOR'] = '.our_price_display';
                 }
