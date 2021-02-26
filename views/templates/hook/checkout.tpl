@@ -57,7 +57,6 @@
     }
     .clearpay-header img {
         height: 35px;
-        padding-right: 10px;
     }
     .clearpay-header-img {
         display: inline;

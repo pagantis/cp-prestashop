@@ -47,7 +47,6 @@
     }
     .clearpay-header img {
         height: 40px;
-        padding-right: 10px;
     }
 
     .clearpay-header-img {
@@ -90,12 +89,12 @@
     }
     @media only screen and (max-width: 1200px) and (min-width: 990px)  {
         .clearpay-header img {
-            left:35%;
+            padding: 0;
         }
     }
     @media only screen and (max-width: 989px) and (min-width: 768px)  {
         .clearpay-header img {
-            left:30%;
+            padding: 0;
         }
         .clearpay-header {
             height: 100px !important;
@@ -103,7 +102,7 @@
     }
     @media only screen and (max-width: 767px) and (min-width: 575px)  {
         .clearpay-header img {
-            left:35%;
+            padding: 0;
         }
         .clearpay-header {
             height: 65px !important;
@@ -111,7 +110,7 @@
     }
     @media only screen and (max-width: 575px) {
         .clearpay-header img {
-            left:28%;
+            padding: 0;
         }
         .clearpay-header {
             height: 70px !important;
