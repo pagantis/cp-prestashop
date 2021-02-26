@@ -3,7 +3,9 @@
 global $_MODULE;
 $_MODULE = array();
 $_MODULE['<{clearpay}prestashop>clearpay_e7e35f48cbce0859d908c6b61eafe05b'] = 'Pasarela de pago Clearpay';
-$_MODULE['<{clearpay}prestashop>clearpay_e2b8db013b62748f28a8f19eaa1ddfbf'] = 'Compra ahora, paga más tarde - 4 plazos. Sin intereses.';
+$_MODULE['<{clearpay}prestashop>clearpay_2a7b59da56de0531430d25536e9eb49e'] = 'Compra ahora, paga más tarde - 4 plazos. Sin intereses. Consigue nuevos clientes, aumenta tu';
+$_MODULE['<{clearpay}prestashop>clearpay_910cfd506ed458d25b19f76dc940e0f2'] = ' conversión, tu recurrencia de compra y tu ticket medio ofreciendoles cuotas';
+$_MODULE['<{clearpay}prestashop>clearpay_7194b53cf45110b8206f55295994d868'] = 'sin costes extras.';
 $_MODULE['<{clearpay}prestashop>clearpay_92d4773a9f32fc3333cb8238471cf763'] = 'Falta la extension de php: curl';
 $_MODULE['<{clearpay}prestashop>clearpay_5984afe5af3bc7d4a01ba1d722c00a38'] = 'La versión mínima soportada de PHP es 5.3.0';
 $_MODULE['<{clearpay}prestashop>clearpay_8a04b447fe7942b43631e4bfe52b9026'] = 'O 4 pagos sin coste de';

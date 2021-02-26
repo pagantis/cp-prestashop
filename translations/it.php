@@ -3,7 +3,9 @@
 global $_MODULE;
 $_MODULE = array();
 $_MODULE['<{clearpay}prestashop>clearpay_e7e35f48cbce0859d908c6b61eafe05b'] = 'Clearpay Payment Gateway';
-$_MODULE['<{clearpay}prestashop>clearpay_e2b8db013b62748f28a8f19eaa1ddfbf'] = 'Acquista ora, paga più tardi - 4 rate, sempre a interessi zero';
+$_MODULE['<{clearpay}prestashop>clearpay_2a7b59da56de0531430d25536e9eb49e'] = 'Acquista ora, paga più tardi - 4 rate, sempre a interessi zero. Raggiungi nuovi clienti, aumenta il tasso di conversione e il ticket medio, incrementa il';
+$_MODULE['<{clearpay}prestashop>clearpay_910cfd506ed458d25b19f76dc940e0f2'] = ' tasso di ripetitività di acquisto dei tuoi clienti offrendo loro la possibilità di pagare a rate,';
+$_MODULE['<{clearpay}prestashop>clearpay_7194b53cf45110b8206f55295994d868'] = ' sempre a interessi zero.';
 $_MODULE['<{clearpay}prestashop>clearpay_92d4773a9f32fc3333cb8238471cf763'] = 'Devi abilitare l\'estensione cURL sul tuo server per installare questo modulo';
 $_MODULE['<{clearpay}prestashop>clearpay_5984afe5af3bc7d4a01ba1d722c00a38'] = 'La versione PHP successiva alla 5.3.0 non è supportata';
 $_MODULE['<{clearpay}prestashop>clearpay_8a04b447fe7942b43631e4bfe52b9026'] = 'O 4 pagamenti senza alcun costo da';

@@ -100,7 +100,9 @@ class Clearpay extends PaymentModule
         $this->module_key = '1da91d21c9c3427efd7530c2be29182d';
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
         $this->displayName = $this->l('Clearpay Payment Gateway');
-        $this->description = $this->l('Buy now, pay later - Enjoy interest-free payments');
+        $this->description = $this->l('Buy now, pay later. Always interest-free. Reach new customers, increase your') .
+            $this->l(' conversion rate, recurrency and average order value ofering interest-free installments') .
+            $this->l(' in your eCommerce.');
         $this->currency = 'EUR';
         $this->currencySymbol = '€';
         $context = Context::getContext();
