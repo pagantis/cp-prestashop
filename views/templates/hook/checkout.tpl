@@ -1,9 +1,4 @@
-{
-Error: Parse error on line 1:
-{* * This file is pa
--^
-Expecting 'STRING', '}'
-*
+{*
  * This file is part of the official Clearpay module for PrestaShop.
  *
  * @author    Clearpay <integrations@clearpay.com>
@@ -23,7 +18,7 @@ Expecting 'STRING', '}'
     p.payment_module a.clearpay-checkout.ps_version_1-7 {
         background: none;
     }
-    .payment-option img[src*='clearpay'] {
+    .payment-option img[src*='static.afterpay.com'] {
         height: 25px;
         padding-left: 5px;
         content:url('{$LOGO_BADGE|escape:'htmlall':'UTF-8'}');
@@ -57,25 +52,33 @@ Expecting 'STRING', '}'
     .clearpay-header {
         color: #7a7a7a;
         position: relative;
-        padding-right: 2px;
+        padding-left: 120px;
         background-color: #b2fce4;
+        text-align: center;
+        float: left;
+        width: 100%;
+        min-height: 35px;
+        padding-top: 7px;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
     }
     .clearpay-header img {
-        height: 35px;
+        height: 25px;
+        margin-top: 5px;
     }
     .clearpay-header-img {
-        display: inline;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
 
     .clearpay-header-text1 {
         display: inline;
-        text-align: center;
         color: black;
         font-weight: bold;
     }
     .clearpay-header-text2 {
-        display: inline-block;
-        text-align: center;
+        display: inline;
     }
     .clearpay-checkout-ps1-6-logo {
         height: 45px;

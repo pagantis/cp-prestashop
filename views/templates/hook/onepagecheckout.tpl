@@ -1,3 +1,10 @@
+{*
+ * This file is part of the official Clearpay module for PrestaShop.
+ *
+ * @author    Clearpay <integrations@clearpay.com>
+ * @copyright 2020 Clearpay
+ * @license   proprietary
+ *}
 <style>
     p.payment_module.Clearpay.ps_version_1-7 {
         margin-left: -5px;
@@ -41,12 +48,12 @@
         color: #7a7a7a;
         position: relative;
         text-align: center;
-        padding-right: 10px;
         background-color: #b2fce4;
-        padding-bottom: 10px;
+        padding: 5px 10px 10px 0px;
+        overflow: visible;
     }
     .clearpay-header img {
-        height: 40px;
+        height: 28px;
     }
 
     .clearpay-header-img {
@@ -79,42 +86,6 @@
     .clearpay-terms {
         margin-top: 10px;
         display: inline-block;
-    }
-    @media only screen and (max-width: 1200px) {
-        .clearpay-header {
-            text-align: center;
-            display: block;
-            height: 65px !important;
-        }
-    }
-    @media only screen and (max-width: 1200px) and (min-width: 990px)  {
-        .clearpay-header img {
-            padding: 0;
-        }
-    }
-    @media only screen and (max-width: 989px) and (min-width: 768px)  {
-        .clearpay-header img {
-            padding: 0;
-        }
-        .clearpay-header {
-            height: 100px !important;
-        }
-    }
-    @media only screen and (max-width: 767px) and (min-width: 575px)  {
-        .clearpay-header img {
-            padding: 0;
-        }
-        .clearpay-header {
-            height: 65px !important;
-        }
-    }
-    @media only screen and (max-width: 575px) {
-        .clearpay-header img {
-            padding: 0;
-        }
-        .clearpay-header {
-            height: 70px !important;
-        }
     }
 </style>
 {if $PS_VERSION !== '1-7'}
