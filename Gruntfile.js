@@ -1,9 +1,27 @@
 module.exports = function(grunt) {
     grunt.initConfig({
         shell: {
-            rename: {
+            generateClearpayZip: {
                 command:
-                    'cp clearpay.zip clearpay-$(git rev-parse --abbrev-ref HEAD).zip \n'
+                    'cp module.zip clearpay-$(git rev-parse --abbrev-ref HEAD).zip \n'
+            },
+            generateAfterpayZip: {
+                command:
+                    'cp module.zip afterpay-$(git rev-parse --abbrev-ref HEAD).zip \n'
+            },
+            generateClearpayBrand: {
+                command:
+                'sed  \'26s/.*/    const DEFAULT_BRAND = "CP";/\' clearpay.php > clearpayCP.php \n' +
+                'sed  \'22s/.*/    const PRODUCT_NAME = "Clearpay";/\' controllers/front/notify.php > controllers/front/notifyCP.php \n' +
+                'mv clearpayCP.php clearpay.php \n' +
+                'mv controllers/front/notifyCP.php controllers/front/notify.php \n'
+            },
+            generateAfterpayBrand: {
+                command:
+                'sed  \'26s/.*/    const DEFAULT_BRAND = "AP";/\' clearpay.php > clearpayAP.php \n' +
+                'sed  \'22s/.*/    const PRODUCT_NAME = "Afterpay";/\' controllers/front/notify.php > controllers/front/notifyAP.php \n' +
+                'mv clearpayAP.php clearpay.php \n' +
+                'mv controllers/front/notifyAP.php controllers/front/notify.php \n'
             },
             autoindex: {
                 command:
@@ -46,7 +64,7 @@ module.exports = function(grunt) {
         compress: {
             main: {
                 options: {
-                    archive: 'clearpay.zip'
+                    archive: 'module.zip'
                 },
                 files: [
                     {src: ['controllers/**'], dest: 'clearpay/', filter: 'isFile'},
@@ -78,8 +96,12 @@ module.exports = function(grunt) {
     grunt.registerTask('default', [
         'shell:composerProd',
         'shell:autoindex',
+        'shell:generateAfterpayBrand',
         'compress',
-        'shell:rename',
+        'shell:generateAfterpayZip',
+        'shell:generateClearpayBrand',
+        'compress',
+        'shell:generateClearpayZip',
         'shell:composerDev'
     ]);
 

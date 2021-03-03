@@ -19,7 +19,7 @@ use Afterpay\SDK\MerchantAccount as ClearpayMerchant;
 class ClearpayNotifyModuleFrontController extends AbstractController
 {
     /** Product Name */
-    const PRODUCT_NAME = 'Clearpay';
+    const PRODUCT_NAME = "Clearpay";
 
     /** Cart tablename */
     const CART_TABLE = 'clearpay_cart_process';

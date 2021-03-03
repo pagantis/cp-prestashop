@@ -23,7 +23,7 @@ class Clearpay extends PaymentModule
     /**
      * Default Region for assets and translations
      */
-    const DEFAULT_BRAND = 'CP';
+    const DEFAULT_BRAND = "CP";
 
     /**
      * Available currency
