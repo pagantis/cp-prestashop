@@ -240,11 +240,11 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             if (isset($clearpayPaymentObj->getResponse()->getParsedBody()->message)) {
                 $errorMessage = $clearpayPaymentObj->getResponse()->getParsedBody()->message;
             }
-            $errorMessage .= $this->l('. Status code: ')
+            $errorMessage .= $this->ll('. Status code: ')
                 . $clearpayPaymentObj->getResponse()->getHttpStatusCode()
             ;
             $this->saveLog(
-                $this->l('Error received when trying to create a order: ') .
+                $this->ll('Error received when trying to create a order: ') .
                 $errorMessage . '. URL: ' . $clearpayPaymentObj->getApiEnvironmentUrl().$clearpayPaymentObj->getUri(),
                 2
             );
