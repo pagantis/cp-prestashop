@@ -44,7 +44,7 @@ services:
       - "prestashop17-test.docker:127.0.0.1"
   prestashop17-dev:
     container_name: prestashop17-dev
-    image: prestashop/prestashop:1.7.6.9
+    image: prestashop/prestashop:1.7.7.2
     depends_on:
       - db17-dev
     environment:

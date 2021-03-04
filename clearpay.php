@@ -922,7 +922,7 @@ class Clearpay extends PaymentModule
             if ($templateConfigs['PRICE_SELECTOR'] === 'default'|| $templateConfigs['PRICE_SELECTOR'] === '') {
                 $templateConfigs['PRICE_SELECTOR'] = '.current-price :not(span.discount)';
                 if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
-                    $templateConfigs['PRICE_SELECTOR'] = '.our_price_display';
+                    $templateConfigs['PRICE_SELECTOR'] = '#our_price_display';
                 }
                 if ($this->currency === 'GBP') {
                     $templateConfigs['AMOUNT_WITH_CURRENCY'] = $this->currencySymbol. $templateConfigs['AMOUNT'];
