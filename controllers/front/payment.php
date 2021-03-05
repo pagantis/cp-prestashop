@@ -99,7 +99,7 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             null,
             array('step'=>3)
         );
-        $paymentObjData['cancelUrl'] = (Configuration::get('CLEARPAY_URL_KO') !== '') ?
+        $paymentObjData['cancelUrl'] = (!empty(Configuration::get('CLEARPAY_URL_KO')) ?
             Configuration::get('CLEARPAY_URL_KO') : $paymentObjData['koUrl'];
         $paymentObjData['publicKey'] = Configuration::get('CLEARPAY_PUBLIC_KEY');
         $paymentObjData['secretKey'] = Configuration::get('CLEARPAY_SECRET_KEY');

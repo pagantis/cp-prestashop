@@ -81,9 +81,9 @@
         display: inline;
     }
     .clearpay-checkout-ps1-6-logo {
-        height: 45px;
+        height: 35px;
         margin-left: 10px;
-        top: 25%;
+        top: 30%;
         position: absolute;
     }
     .clearpay-checkout-ps1-6-logo-text {

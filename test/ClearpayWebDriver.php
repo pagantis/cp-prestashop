@@ -20,7 +20,7 @@ class ClearpayWebDriver extends RemoteWebDriver
      *
      * @return WebDriverWait
      */
-    public function wait($timeout_in_second = 120, $interval_in_millisecond = 2000)
+    public function wait($timeout_in_second = 20, $interval_in_millisecond = 1000)
     {
         return new WebDriverWait(
             $this,

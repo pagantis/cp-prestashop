@@ -979,6 +979,7 @@ class Clearpay extends PaymentModule
      */
     public function hookDisplayProductPriceBlock($params)
     {
+        // $params['type'] = weight | price | after_price
         if (isset($params['type']) && $params['type'] === 'after_price' &&
             isset($params['smarty']) && isset($params['smarty']->template_resource) &&
             (
