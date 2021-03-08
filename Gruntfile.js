@@ -31,10 +31,10 @@ module.exports = function(grunt) {
 
             },
             composerProd: {
-                command: 'composer install --prefer-source --no-dev'
+                command: 'composer install --no-dev'
             },
             composerDev: {
-                command: 'composer install --prefer-source --ignore-platform-reqs'
+                command: 'composer install --ignore-platform-reqs'
             },
             runTestPrestashop17: {
                 command:
