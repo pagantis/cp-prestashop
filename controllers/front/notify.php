@@ -328,7 +328,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         $getOrderRequest->send();
 
         if ($getOrderRequest->getResponse()->getHttpStatusCode() >= 400) {
-            throw new \Exception($this->ll('Unable to retrieve order from ') . self::PRODUCT_NAME .
+            throw new \Exception($this->l('Unable to retrieve order from ') . self::PRODUCT_NAME .
                 ': ' . $this->clearpayOrderId);
         }
         $this->clearpayOrder = $getOrderRequest->getResponse()->getParsedBody();

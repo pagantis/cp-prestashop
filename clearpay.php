@@ -21,11 +21,6 @@ if (!defined('_PS_VERSION_')) {
 class Clearpay extends PaymentModule
 {
     /**
-     * Default Region for assets and translations
-     */
-    const DEFAULT_BRAND = "CP";
-
-    /**
      * Available currency
      */
     const SIMULATOR_IS_ENABLED = true;
@@ -77,21 +72,6 @@ class Clearpay extends PaymentModule
     );
 
     /**
-     * Assets for AfterPay/clearpay brand
-     *
-     * @var array
-     */
-    public $brandAssets = array(
-        'AP' => array(
-            'LOGO_APP' => 'https://static.afterpay.com/app/icon-128x128.png',
-            'LOGO_BADGE'=> 'https://static.afterpay.com/email/logo-afterpay-colour.png'
-        ),
-        'CP' => array(
-            'LOGO_APP' => 'https://static.afterpay.com/app/icon-128x128.png',
-            'LOGO_BADGE'=> 'https://static.afterpay.com/email/logo-clearpay-colour.png'
-        ),
-    );
-    /**
      * @var null $shippingAddress
      */
     protected $shippingAddress = null;
@@ -117,15 +97,15 @@ class Clearpay extends PaymentModule
         $this->name = 'clearpay';
         $this->tab = 'payments_gateways';
         $this->version = '1.1.0';
-        $this->author = $this->ll('Clearpay');
+        $this->author = $this->l('Clearpay');
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
         $this->module_key = '1da91d21c9c3427efd7530c2be29182d';
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
-        $this->displayName = $this->ll('Clearpay Payment Gateway');
-        $this->description = $this->ll('Buy now, pay later. Always interest-free. Reach new customers, ') .
-            $this->ll('increase your conversion rate, recurrency and average order value ofering ') .
-            $this->ll('interest-free installments in your eCommerce.');
+        $this->displayName = $this->l('Clearpay Payment Gateway');
+        $this->description = $this->l('Buy now, pay later. Always interest-free. Reach new customers, ') .
+            $this->l('increase your conversion rate, recurrency and average order value ofering ') .
+            $this->l('interest-free installments in your eCommerce.');
         $this->currency = 'EUR';
         $this->currencySymbol = '€';
         $context = Context::getContext();
@@ -146,11 +126,11 @@ class Clearpay extends PaymentModule
     {
         if (!extension_loaded('curl')) {
             $this->_errors[] =
-                $this->ll('You have to enable the cURL extension on your server to install this module');
+                $this->l('You have to enable the cURL extension on your server to install this module');
             return false;
         }
         if (!version_compare(phpversion(), '5.6.0', '>=')) {
-            $this->_errors[] = $this->ll('The PHP version bellow 5.3.0 is not supported');
+            $this->_errors[] = $this->l('The PHP version bellow 5.3.0 is not supported');
             return false;
         }
 
@@ -329,10 +309,10 @@ class Clearpay extends PaymentModule
             if ($this->currency === 'GBP') {
                 $amountWithCurrency = $this->currencySymbol. Clearpay::parseAmount($totalAmount/4);
             }
-            $checkoutText = $this->ll('Or 4 interest-free payments of') . ' ' . $amountWithCurrency . ' ';
-            $checkoutText .= $this->ll('with');
+            $checkoutText = $this->l('Or 4 interest-free payments of') . ' ' . $amountWithCurrency . ' ';
+            $checkoutText .= $this->l('with');
             if ($this->isOPC()) {
-                $checkoutText = $this->ll('4 interest-free payments of') . ' ' . $amountWithCurrency;
+                $checkoutText = $this->l('4 interest-free payments of') . ' ' . $amountWithCurrency;
             }
             $templateConfigs['TITLE'] = (string) $checkoutText;
             $language = Language::getLanguage($this->context->language->id);
@@ -348,25 +328,23 @@ class Clearpay extends PaymentModule
                     Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 2, 4));
             }
             $templateConfigs['CURRENCY'] = $this->currency;
-            $templateConfigs['MORE_HEADER1'] = $this->ll('Always interest-free.');
-            $templateConfigs['MORE_HEADER2'] = $this->ll('No extra documentation. Instant aproval.');
+            $templateConfigs['MORE_HEADER1'] = $this->l('Always interest-free.');
+            $templateConfigs['MORE_HEADER2'] = $this->l('No extra documentation. Instant aproval.');
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
-            $moreInfo = $this->ll('You will be redirected to Clearpay website to fill out your payment information.');
-            $moreInfo .= ' ' .$this->ll('You will be redirected to our site to complete your order. Please note: ');
-            $moreInfo .= ' ' . $this->ll('Clearpay can only be used as a payment method for orders with a shipping');
-            $moreInfo .= ' ' . $this->ll('and billing address within the UK.');
+            $moreInfo = $this->l('You will be redirected to Clearpay website to fill out your payment information.');
+            $moreInfo .= ' ' .$this->l('You will be redirected to our site to complete your order. Please note: ');
+            $moreInfo .= ' ' . $this->l('Clearpay can only be used as a payment method for orders with a shipping');
+            $moreInfo .= ' ' . $this->l('and billing address within the UK.');
             $templateConfigs['MOREINFO_ONE'] = $moreInfo;
-            $templateConfigs['TERMS_AND_CONDITIONS'] = $this->ll('Terms and conditions');
-            $termsLink = $this->ll('https://www.clearpay.co.uk/en-GB/terms-of-service');
+            $templateConfigs['TERMS_AND_CONDITIONS'] = $this->l('Terms and conditions');
+            $termsLink = $this->l('https://www.clearpay.co.uk/en-GB/terms-of-service');
             $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $termsLink;
-            $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $this->ll(
+            $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $this->l(
                 'https://www.clearpay.co.uk/en-GB/terms-of-service'
             );
-            $templateConfigs['LOGO_TEXT'] = $this->ll("Clearpay");
-            $icon = $this->getAssetsPerBrand('LOGO_APP');
-            $templateConfigs['ICON'] = $icon;
-            $badge = $this->getAssetsPerBrand('LOGO_BADGE');
-            $templateConfigs['LOGO_BADGE'] = $badge;
+            $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
+            $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
+            $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
@@ -405,7 +383,7 @@ class Clearpay extends PaymentModule
         $inputs[] = array(
             'name' => 'CLEARPAY_IS_ENABLED',
             'type' =>  'switch',
-            'label' => $this->ll('Module is enabled'),
+            'label' => $this->l('Module is enabled'),
             'prefix' => '<i class="icon icon-key"></i>',
             'class' => 't',
             'required' => true,
@@ -413,50 +391,29 @@ class Clearpay extends PaymentModule
                 array(
                     'id' => 'CLEARPAY_IS_ENABLED_TRUE',
                     'value' => 1,
-                    'label' => $this->ll('Yes', get_class($this), null, false),
+                    'label' => $this->l('Yes', get_class($this), null, false),
                 ),
                 array(
                     'id' => 'CLEARPAY_IS_ENABLED_FALSE',
                     'value' => 0,
-                    'label' => $this->ll('No', get_class($this), null, false),
+                    'label' => $this->l('No', get_class($this), null, false),
                 ),
             )
         );
-        if (self::DEFAULT_BRAND === 'CP') {
-            $query = array(
-                array(
-                    'CLEARPAY_REGION_id' => 'ES',
-                    'CLEARPAY_REGION_name' => $this->ll('Europe')
-                ),
-                array(
-                    'CLEARPAY_REGION_id' => 'GB',
-                    'CLEARPAY_REGION_name' => $this->ll('United Kingdom')
-                )
-            );
-        } else {
-            $query = array(
-                array(
-                    'CLEARPAY_REGION_id' => 'AU',
-                    'CLEARPAY_REGION_name' => $this->ll('Australia')
-                ),
-                array(
-                    'CLEARPAY_REGION_id' => 'CA',
-                    'CLEARPAY_REGION_name' => $this->ll('Canada')
-                ),
-                array(
-                    'CLEARPAY_REGION_id' => 'NZ',
-                    'CLEARPAY_REGION_name' => $this->ll('New Zealand')
-                ),
-                array(
-                    'CLEARPAY_REGION_id' => 'US',
-                    'CLEARPAY_REGION_name' => $this->ll('United States')
-                )
-            );
-        }
+        $query = array(
+            array(
+                'CLEARPAY_REGION_id' => 'ES',
+                'CLEARPAY_REGION_name' => $this->l('Europe')
+            ),
+            array(
+                'CLEARPAY_REGION_id' => 'GB',
+                'CLEARPAY_REGION_name' => $this->l('United Kingdom')
+            )
+        );
         $inputs[] = array(
             'name' => 'CLEARPAY_REGION',
             'type' => 'select',
-            'label' => $this->ll('API region'),
+            'label' => $this->l('API region'),
             'prefix' => '<i class="icon icon-key"></i>',
             'class' => 't',
             'required' => true,
@@ -469,19 +426,19 @@ class Clearpay extends PaymentModule
 
         $inputs[] = array(
             'name' => 'CLEARPAY_PUBLIC_KEY',
-            'suffix' => $this->ll('ex: 400101010'),
+            'suffix' => $this->l('ex: 400101010'),
             'type' => 'text',
-            'label' => $this->ll('Merchant Id'),
+            'label' => $this->l('Merchant Id'),
             'prefix' => '<i class="icon icon-key"></i>',
             'col' => 6,
             'required' => true,
         );
         $inputs[] = array(
             'name' => 'CLEARPAY_SECRET_KEY',
-            'suffix' => $this->ll('128 alphanumeric code'),
+            'suffix' => $this->l('128 alphanumeric code'),
             'type' => 'text',
             'size' => 128,
-            'label' => $this->ll('Secret Key'),
+            'label' => $this->l('Secret Key'),
             'prefix' => '<i class="icon icon-key"></i>',
             'col' => 6,
             'required' => true,
@@ -489,7 +446,7 @@ class Clearpay extends PaymentModule
         $inputs[] = array(
             'name' => 'CLEARPAY_ENVIRONMENT',
             'type' => 'select',
-            'label' => $this->ll('API Environment'),
+            'label' => $this->l('API Environment'),
             'prefix' => '<i class="icon icon-key"></i>',
             'class' => 't',
             'required' => true,
@@ -497,11 +454,11 @@ class Clearpay extends PaymentModule
                 'query' => array(
                     array(
                         'CLEARPAY_ENVIRONMENT_id' => 'sandbox',
-                        'CLEARPAY_ENVIRONMENT_name' => $this->ll('Sandbox')
+                        'CLEARPAY_ENVIRONMENT_name' => $this->l('Sandbox')
                     ),
                     array(
                         'CLEARPAY_ENVIRONMENT_id' => 'production',
-                        'CLEARPAY_ENVIRONMENT_name' => $this->ll('Production')
+                        'CLEARPAY_ENVIRONMENT_name' => $this->l('Production')
                     )
                 ),
                 'id' => 'CLEARPAY_ENVIRONMENT_id',
@@ -510,25 +467,25 @@ class Clearpay extends PaymentModule
         );
         $inputs[] = array(
             'name' => 'CLEARPAY_MIN_AMOUNT',
-            'suffix' => $this->ll('ex: 0.5'),
+            'suffix' => $this->l('ex: 0.5'),
             'type' => 'text',
-            'label' => $this->ll('Min Payment Limit'),
+            'label' => $this->l('Min Payment Limit'),
             'col' => 6,
             'disabled' => true,
             'required' => false,
         );
         $inputs[] = array(
             'name' => 'CLEARPAY_MAX_AMOUNT',
-            'suffix' => $this->ll('ex: 800'),
+            'suffix' => $this->l('ex: 800'),
             'type' => 'text',
-            'label' => $this->ll('Max Payment Limit'),
+            'label' => $this->l('Max Payment Limit'),
             'col' => 6,
             'disabled' => true,
             'required' => false,
         );
         $inputs[] = array(
             'type' => 'categories',
-            'label' => $this->ll('Restricted Categories'),
+            'label' => $this->l('Restricted Categories'),
             'name' => 'CLEARPAY_RESTRICTED_CATEGORIES',
             'col' => 7,
             'tree' => array(
@@ -541,20 +498,20 @@ class Clearpay extends PaymentModule
         );
         $inputs[] = array(
             'name' => 'CLEARPAY_CSS_SELECTOR',
-            'suffix' => $this->ll('The default value is \'default\'.'),
-            'desc' => $this->ll('This property set the CSS selector needed to show the assets on the product page.') .
-                ' ' . $this->ll('Only change this value if it doesn\'t appear properly.'),
+            'suffix' => $this->l('The default value is \'default\'.'),
+            'desc' => $this->l('This property set the CSS selector needed to show the assets on the product page.') .
+                ' ' . $this->l('Only change this value if it doesn\'t appear properly.'),
             'type' => 'text',
             'size' => 128,
-            'label' => $this->ll('Price CSS Selector'),
+            'label' => $this->l('Price CSS Selector'),
             'col' => 8,
             'required' => false,
         );
         $inputs[] = array(
             'name' => 'CLEARPAY_LOGS',
             'type' => 'checkbox',
-            'label' => $this->ll('Debug mode'),
-            'desc' => $this->ll(
+            'label' => $this->l('Debug mode'),
+            'desc' => $this->l(
                 'You can see these logs on the "Configure -> Advanced Parameters -> Logs" section'
             ),
             'class' => 't',
@@ -562,7 +519,7 @@ class Clearpay extends PaymentModule
                 'query' => array(
                     array(
                         'CLEARPAY_LOGS_id' => 'ACTIVE',
-                        'CLEARPAY_LOGS_name' => $this->ll('Activate debug logs')
+                        'CLEARPAY_LOGS_name' => $this->l('Activate debug logs')
                     )
                 ),
                 'id' => 'CLEARPAY_LOGS_id',
@@ -574,12 +531,12 @@ class Clearpay extends PaymentModule
         $return = array(
             'form' => array(
                 'legend' => array(
-                    'title' => $this->ll('Settings'),
+                    'title' => $this->l('Settings'),
                     'icon' => 'icon-cogs',
                 ),
                 'input' => $inputs,
                 'submit' => array(
-                    'title' => $this->ll('Save'),
+                    'title' => $this->l('Save'),
                     'class' => 'btn btn-default pull-right'
                 )
             )
@@ -609,13 +566,13 @@ class Clearpay extends PaymentModule
         $helper->toolbar_btn = array(
             'save' =>
                 array(
-                    'desc' => $this->ll('Save'),
+                    'desc' => $this->l('Save'),
                     'href' => AdminController::$currentIndex.'&configure='.$this->name.'&save'.$this->name.
                         '&token='.Tools::getAdminTokenLite('AdminModules'),
                 ),
             'back' => array(
                 'href' => AdminController::$currentIndex.'&token='.Tools::getAdminTokenLite('AdminModules'),
-                'desc' => $this->ll('Back to list')
+                'desc' => $this->l('Back to list')
             )
         );
 
@@ -674,9 +631,9 @@ class Clearpay extends PaymentModule
         $isEnabled = Configuration::get('CLEARPAY_IS_ENABLED');
 
         if (empty($publicKey) || empty($secretKey)) {
-            $message = $this->displayError($this->ll('Merchant Id and Secret Key are mandatory fields'));
+            $message = $this->displayError($this->l('Merchant Id and Secret Key are mandatory fields'));
         } else {
-            $message = $this->displayConfirmation($this->ll('All changes have been saved'));
+            $message = $this->displayConfirmation($this->l('All changes have been saved'));
         }
 
         // auto update configuration price thresholds and allowed countries in background
@@ -703,8 +660,8 @@ class Clearpay extends PaymentModule
                         $response = isset($configuration->message) ? $configuration->message : "NULL";
 
                         $message = $this->displayError(
-                            $this->ll('Configuration request can not be done with the region and credentials') .
-                            $this->ll(' provided. Message received: ') . $response
+                            $this->l('Configuration request can not be done with the region and credentials') .
+                            $this->l(' provided. Message received: ') . $response
                         );
                         Configuration::updateValue(
                             'CLEARPAY_MIN_AMOUNT',
@@ -756,23 +713,23 @@ class Clearpay extends PaymentModule
                     $uri = $getConfigurationRequest->getApiEnvironmentUrl() . $getConfigurationRequest->getUri();
                 }
                 $message = $this->displayError(
-                    $this->ll('An error occurred when retrieving configuration from') . ' ' . $uri
+                    $this->l('An error occurred when retrieving configuration from') . ' ' . $uri
                 );
             }
         }
 
-        $logo = $this->getAssetsPerBrand('LOGO_BADGE');
+        $logo = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
         $tpl = $this->local_path.'views/templates/admin/config-info.tpl';
-        $header = $this->ll('Clearpay Configuration Panel');
-        $button1 = $this->ll('Contact us');
-        $button2 = $this->ll('Getting started');
-        $centeredText = '<strong>'. $this->ll('1. Before getting started:') . '</strong>' .
-            $this->ll(' Do you want to know more about Clearpay?') .
-            $this->ll(' Fill in the following contact form and our sales team will reach out to you.') .
-            '<br><br><strong>'. $this->ll('2. Getting started:') . '</strong>' .
-            $this->ll(' Are you ready to integrate Clearpay?') .
-            $this->ll(' If you have been in contact with our sales team and have signed our contract ') .
-            $this->ll(' click on the following link to get started.');
+        $header = $this->l('Clearpay Configuration Panel');
+        $button1 = $this->l('Contact us');
+        $button2 = $this->l('Getting started');
+        $centeredText = '<strong>'. $this->l('1. Before getting started:') . '</strong>' .
+            $this->l(' Do you want to know more about Clearpay?') .
+            $this->l(' Fill in the following contact form and our sales team will reach out to you.') .
+            '<br><br><strong>'. $this->l('2. Getting started:') . '</strong>' .
+            $this->l(' Are you ready to integrate Clearpay?') .
+            $this->l(' If you have been in contact with our sales team and have signed our contract ') .
+            $this->l(' click on the following link to get started.');
         $this->context->smarty->assign(array(
             'header' => $header,
             'button1' => $button1,
@@ -812,30 +769,28 @@ class Clearpay extends PaymentModule
             if ($this->currency === 'GBP') {
                 $amountWithCurrency = $this->currencySymbol . Clearpay::parseAmount($totalAmount / 4);
             }
-            $checkoutText = $this->ll('Or 4 interest-free payments of') . ' ' . $amountWithCurrency . ' ';
-            $checkoutText .= $this->ll('with');
+            $checkoutText = $this->l('Or 4 interest-free payments of') . ' ' . $amountWithCurrency . ' ';
+            $checkoutText .= $this->l('with');
             if ($this->isOPC()) {
-                $checkoutText = $this->ll('4 interest-free payments of') . ' ' . $amountWithCurrency
-                    . $this->ll(' with Clearpay');
+                $checkoutText = $this->l('4 interest-free payments of') . ' ' . $amountWithCurrency
+                    . $this->l(' with Clearpay');
             }
             $templateConfigs['TITLE'] = $checkoutText;
-            $templateConfigs['MORE_HEADER'] = $this->ll('Instant approval decision - 4 interest-free payments of')
+            $templateConfigs['MORE_HEADER'] = $this->l('Instant approval decision - 4 interest-free payments of')
                 . ' ' . $amountWithCurrency;
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
-            $templateConfigs['MOREINFO_ONE'] = $this->ll(
+            $templateConfigs['MOREINFO_ONE'] = $this->l(
                 'You will be redirected to Clearpay website to fill out your 
                 payment information. You will be redirected to our site to complete your order. Please note: Clearpay 
                 can only be used as a payment method for orders with a shipping and billing address within the UK.'
             );
-            $templateConfigs['TERMS_AND_CONDITIONS'] = $this->ll('Terms and conditions');
-            $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $this->ll(
+            $templateConfigs['TERMS_AND_CONDITIONS'] = $this->l('Terms and conditions');
+            $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $this->l(
                 'https://www.clearpay.co.uk/en-GB/terms-of-service'
             );
-            $templateConfigs['LOGO_TEXT'] = $this->ll("Clearpay");
-            $icon = $this->getAssetsPerBrand('LOGO_APP');
-            $templateConfigs['ICON'] = $icon;
-            $badge = $this->getAssetsPerBrand('LOGO_BADGE');
-            $templateConfigs['LOGO_BADGE'] = $badge;
+            $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
+            $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
+            $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
@@ -867,13 +822,13 @@ class Clearpay extends PaymentModule
         if ($templateName === 'cart.tpl') {
             $amount = Clearpay::parseAmount($this->context->cart->getOrderTotal());
             $templateConfigs['AMOUNT'] =  Clearpay::parseAmount($this->context->cart->getOrderTotal()/4);
-            $templateConfigs['PRICE_TEXT'] = $this->ll('4 interest-free payments of');
-            $templateConfigs['MORE_INFO'] = $this->ll('FIND OUT MORE');
-            $desc1 = $this->ll('Buy now. Pay later. No interest.');
+            $templateConfigs['PRICE_TEXT'] = $this->l('4 interest-free payments of');
+            $templateConfigs['MORE_INFO'] = $this->l('FIND OUT MORE');
+            $desc1 = $this->l('Buy now. Pay later. No interest.');
             $templateConfigs['DESCRIPTION_TEXT_ONE'] = $desc1;
-            $desc2 = $this->ll('With Clearpay you can enjoy your purchase now and pay in 4 installments. ');
-            $desc2 .= ' ' . $this->ll(' No hidden cost. Choose Clearpay as your payment method in the check-out, ');
-            $desc2 .= ' ' . $this->ll(' fill in a simple form, no documents needed, and pay later.');
+            $desc2 = $this->l('With Clearpay you can enjoy your purchase now and pay in 4 installments. ');
+            $desc2 .= ' ' . $this->l(' No hidden cost. Choose Clearpay as your payment method in the check-out, ');
+            $desc2 .= ' ' . $this->l(' fill in a simple form, no documents needed, and pay later.');
             $templateConfigs['DESCRIPTION_TEXT_TWO'] = $desc2;
             $categoryRestriction = $this->isCartRestricted($this->context->cart);
             $simulatorIsEnabled = true;
@@ -1039,10 +994,10 @@ class Clearpay extends PaymentModule
         $isDeclined = Tools::getValue('clearpay_declined');
         $isMismatch = Tools::getValue('clearpay_mismatch');
         $referenceId = Tools::getValue('clearpay_reference_id');
-        $errorText1 = $this->ll('Thanks for confirming your payment, however as your cart has changed we need a new ') .
-            $this->ll(' confirmation. Please proceed to Clearpay and retry again in a few minutes');
-        $errorText2 = $this->ll('For more information, please contact the Clearpay Customer Service Team:');
-        $declinedText1 = $this->ll('We are sorry to inform you that your payment has been declined by Clearpay.');
+        $errorText1 = $this->l('Thanks for confirming your payment, however as your cart has changed we need a new ') .
+            $this->l(' confirmation. Please proceed to Clearpay and retry again in a few minutes');
+        $errorText2 = $this->l('For more information, please contact the Clearpay Customer Service Team:');
+        $declinedText1 = $this->l('We are sorry to inform you that your payment has been declined by Clearpay.');
         $this->context->smarty->assign(array(
             'REFERENCE_ID' => $referenceId,
             'PS_VERSION' => str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3)),
@@ -1115,7 +1070,7 @@ class Clearpay extends PaymentModule
             if ($clearpayRefund->send()) {
                 if ($clearpayRefund->getResponse()->isSuccessful()) {
                     PrestaShopLogger::addLog(
-                        $this->ll("Clearpay Full Refund done: ") . Clearpay::parseAmount($order->total_paid_real),
+                        $this->l("Clearpay Full Refund done: ") . Clearpay::parseAmount($order->total_paid_real),
                         1,
                         null,
                         "Clearpay",
@@ -1125,7 +1080,7 @@ class Clearpay extends PaymentModule
                 }
                 $parsedBody = $clearpayRefund->getResponse()->getParsedBody();
                 PrestaShopLogger::addLog(
-                    $this->ll("Clearpay Full Refund Error: ") . $parsedBody->errorCode . '-> ' . $parsedBody->message,
+                    $this->l("Clearpay Full Refund Error: ") . $parsedBody->errorCode . '-> ' . $parsedBody->message,
                     3,
                     null,
                     "Clearpay",
@@ -1170,7 +1125,7 @@ class Clearpay extends PaymentModule
         if ($clearpayRefund->send()) {
             if ($clearpayRefund->getResponse()->isSuccessful()) {
                 PrestaShopLogger::addLog(
-                    $this->ll("Clearpay partial Refund done: ") . $refundTotalAmount,
+                    $this->l("Clearpay partial Refund done: ") . $refundTotalAmount,
                     1,
                     null,
                     "Clearpay",
@@ -1180,7 +1135,7 @@ class Clearpay extends PaymentModule
             }
             $parsedBody = $clearpayRefund->getResponse()->getParsedBody();
             PrestaShopLogger::addLog(
-                $this->ll("Clearpay Partial Refund Error: ") . $parsedBody->errorCode . '-> ' . $parsedBody->message,
+                $this->l("Clearpay Partial Refund Error: ") . $parsedBody->errorCode . '-> ' . $parsedBody->message,
                 3,
                 null,
                 "Clearpay",
@@ -1290,15 +1245,6 @@ class Clearpay extends PaymentModule
     }
 
     /**
-     * @param $assetName
-     * @return string
-     */
-    public function getAssetsPerBrand($assetName = 'LOGO_BADGE')
-    {
-        return $this->brandAssets[self::DEFAULT_BRAND][$assetName];
-    }
-
-    /**
      * @param null $amount
      * @return string
      */
@@ -1340,22 +1286,4 @@ class Clearpay extends PaymentModule
         return false;
     }
 
-    /**
-     * ll function overrides $this->l function in order to switch between AfterPay and Clearpay
-     * BE CAREFULLY IF YOU REGENERATE THE TRANSLATIONS USING PRESTASHOP TRANSLATIONS TOOL AND THIS FUNCTION ARE
-     * POPULATED ON THE SOURCE CODE, ALL TRANSLATIONS WILL BE ERASED.
-     * First replace all '$this->ll(' by '$this->l('
-     * @param string $text
-     * @return string
-     */
-    public function ll($text)
-    {
-        $translation = parent::l($text);
-        if (self::DEFAULT_BRAND === 'CP') {
-            return $translation;
-        }
-        $base = array('Clearpay', 'clearpay', 'CLEARPAY');
-        $replacements = array('Afterpay', 'afterpay', 'AFTERPAY');
-        return str_replace($base, $replacements, $translation);
-    }
 }
