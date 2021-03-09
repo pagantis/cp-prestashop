@@ -213,10 +213,8 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         $callbackKoUrl = $this->context->link->getPageLink('order', null, null, array('step'=>3));
 
         $this->config = array(
-            'urlOK' => (Configuration::get('CLEARPAY_URL_OK') !== '') ?
-                Configuration::get('CLEARPAY_URL_OK') : $callbackOkUrl,
-            'urlKO' => (Configuration::get('CLEARPAY_URL_KO') !== '') ?
-                Configuration::get('CLEARPAY_URL_KO') : $callbackKoUrl,
+            'urlOK' => $callbackOkUrl,
+            'urlKO' => $callbackKoUrl,
             'secureKey' => Tools::getValue('key'),
         );
 
