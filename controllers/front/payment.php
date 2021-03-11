@@ -155,7 +155,9 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                 'line1' => $paymentObjData['billingAddress']->address1,
                 'line2' => $paymentObjData['billingAddress']->address2,
                 'suburb' => $paymentObjData['billingAddress']->city,
+                'area1' => $paymentObjData['billingAddress']->city,
                 'state' => $paymentObjData['billingStateCode'],
+                'region' => $paymentObjData['billingStateCode'],
                 'postcode' => $paymentObjData['billingAddress']->postcode,
                 'countryCode' => $paymentObjData['billingCountryCode'],
                 'phoneNumber' => $paymentObjData['billingAddress']->phone
@@ -166,7 +168,9 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                 'line1' => $paymentObjData['shippingAddress']->address1,
                 'line2' => $paymentObjData['shippingAddress']->address2,
                 'suburb' => $paymentObjData['shippingAddress']->city,
+                'area1' => $paymentObjData['shippingAddress']->city,
                 'state' => $paymentObjData['shippingStateCode'],
+                'region' => $paymentObjData['shippingStateCode'],
                 'postcode' => $paymentObjData['shippingAddress']->postcode,
                 'countryCode' => $paymentObjData['shippingCountryCode'],
                 'phoneNumber' => $paymentObjData['shippingAddress']->phone

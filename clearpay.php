@@ -329,7 +329,7 @@ class Clearpay extends PaymentModule
             }
             $templateConfigs['CURRENCY'] = $this->currency;
             $templateConfigs['MORE_HEADER1'] = $this->l('Always interest-free.');
-            $templateConfigs['MORE_HEADER2'] = $this->l('No extra documentation. Instant aproval.');
+            $templateConfigs['MORE_HEADER2'] = $this->l('No extra documentation. Instant appclearpay.phproval.');
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
             $moreInfo = $this->l('You will be redirected to Clearpay website to fill out your payment information.');
             $moreInfo .= ' ' .$this->l('You will be redirected to our site to complete your order. Please note: ');
