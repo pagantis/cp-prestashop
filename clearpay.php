@@ -860,7 +860,8 @@ class Clearpay extends PaymentModule
             $simulatorIsEnabled = self::SIMULATOR_IS_ENABLED;
             $templateConfigs['PRICE_SELECTOR'] = Configuration::get('CLEARPAY_CSS_SELECTOR');
             if ($templateConfigs['PRICE_SELECTOR'] === 'default'|| $templateConfigs['PRICE_SELECTOR'] === '') {
-                $templateConfigs['PRICE_SELECTOR'] = '.current-price:not(span.discount,span.regular-price,span.discount-percentage)';
+                $templateConfigs['PRICE_SELECTOR'] =
+                    '.current-price:not(span.discount,span.regular-price,span.discount-percentage)';
                 if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
                     $templateConfigs['PRICE_SELECTOR'] = '#our_price_display';
                 }
@@ -907,7 +908,7 @@ class Clearpay extends PaymentModule
                 'views/templates/hook/' . $templateName
             );
         } else {
-            if ($templateName === 'product.tpl' && Configuration::get('CLEARPAY_LOGS') === 'on') {
+            if ($isEnabled && $templateName === 'product.tpl' && Configuration::get('AFTERPAY_LOGS') === 'on') {
                 $logMessage = '';
                 if (!$simulatorIsEnabled) {
                     $logMessage .= "Clearpay: Simulator is disabled by 'self::SIMULATOR_IS_ENABLED'. ";
@@ -1302,5 +1303,4 @@ class Clearpay extends PaymentModule
         }
         return false;
     }
-
 }
