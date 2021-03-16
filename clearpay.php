@@ -278,12 +278,23 @@ class Clearpay extends PaymentModule
      */
     public function hookHeader()
     {
+        echo '<!-- CPVersion:'. $this->version.
+            ' PS:'._PS_VERSION_.
+            ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
+            ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
+            ' Region:'.Configuration::get('CLEARPAY_REGION').
+            ' Lang:'.$this->getCurrentLanguage().
+            ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
+            ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
+            ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
+            ' -->';
         if (_PS_VERSION_ >= "1.7") {
             $this->context->controller->registerJavascript(
                 sha1(mt_rand(1, 90000)),
                 self::CLEARPAY_JS_CDN_URL,
                 array('server' => 'remote')
             );
+
         } else {
             $this->context->controller->addJS(self::CLEARPAY_JS_CDN_URL);
         }
@@ -628,9 +639,10 @@ class Clearpay extends PaymentModule
 
         if (Tools::isSubmit('submit'.$this->name)) {
             foreach ($settingsKeys as $key) {
-                $value = trim(Tools::getValue($key));
-                if (is_array($value)) {
-                    $value = json_encode($value);
+                if (is_array(Tools::getValue($key))) {
+                    $value = json_encode(Tools::getValue($key));
+                } else {
+                    $value = trim(Tools::getValue($key));
                 }
                 if ($key === 'CLEARPAY_LOGS_ACTIVE') {
                     Configuration::updateValue('CLEARPAY_LOGS', $value);
