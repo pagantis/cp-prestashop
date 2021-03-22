@@ -113,120 +113,126 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             .'index.php?canonical=true&fc=module&module=clearpay&controller=notify'
             .'&token='.$paymentObjData['urlToken'] . '&' . http_build_query($query)
         ;
-        \Afterpay\SDK\Model::setAutomaticValidationEnabled(true);
-        $clearpayPaymentObj = new CreateCheckout();
-        $clearpayMerchantAccount = new ClearpayMerchantAccount();
-        $clearpayMerchantAccount
-            ->setMerchantId($paymentObjData['publicKey'])
-            ->setSecretKey($paymentObjData['secretKey'])
-            ->setApiEnvironment($paymentObjData['environment'])
-        ;
-        if (!is_null($paymentObjData['countryCode'])) {
-            $clearpayMerchantAccount->setCountryCode($paymentObjData['countryCode']);
-        }
-
-        $clearpayPaymentObj
-            ->setMerchant(array(
-                'redirectConfirmUrl' => $paymentObjData['okUrl'],
-                'redirectCancelUrl' => $paymentObjData['cancelUrl']
-            ))
-            ->setMerchantAccount($clearpayMerchantAccount)
-            ->setAmount(
-                Clearpay::parseAmount($paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)),
-                $paymentObjData['currency']
-            )
-            ->setTaxAmount(
-                Clearpay::parseAmount(
-                    $paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)
-                    -
-                    $paymentObjData['cart']->getOrderTotal(false, Cart::BOTH)
-                ),
-                $paymentObjData['currency']
-            )
-            ->setConsumer(array(
-                'phoneNumber' => $paymentObjData['billingAddress']->phone,
-                'givenNames' => $paymentObjData['customer']->firstname,
-                'surname' => $paymentObjData['customer']->lastname,
-                'email' => $paymentObjData['customer']->email
-            ))
-            ->setBilling(array(
-                'name' => $paymentObjData['billingAddress']->firstname . " " .
-                    $paymentObjData['billingAddress']->lastname,
-                'line1' => $paymentObjData['billingAddress']->address1,
-                'line2' => $paymentObjData['billingAddress']->address2,
-                'suburb' => $paymentObjData['billingAddress']->city,
-                'area1' => $paymentObjData['billingAddress']->city,
-                'state' => $paymentObjData['billingStateCode'],
-                'region' => $paymentObjData['billingStateCode'],
-                'postcode' => $paymentObjData['billingAddress']->postcode,
-                'countryCode' => $paymentObjData['billingCountryCode'],
-                'phoneNumber' => $paymentObjData['billingAddress']->phone
-            ))
-            ->setShipping(array(
-                'name' => $paymentObjData['shippingAddress']->firstname . " " .
-                    $paymentObjData['shippingAddress']->lastname,
-                'line1' => $paymentObjData['shippingAddress']->address1,
-                'line2' => $paymentObjData['shippingAddress']->address2,
-                'suburb' => $paymentObjData['shippingAddress']->city,
-                'area1' => $paymentObjData['shippingAddress']->city,
-                'state' => $paymentObjData['shippingStateCode'],
-                'region' => $paymentObjData['shippingStateCode'],
-                'postcode' => $paymentObjData['shippingAddress']->postcode,
-                'countryCode' => $paymentObjData['shippingCountryCode'],
-                'phoneNumber' => $paymentObjData['shippingAddress']->phone
-            ))
-            ->setShippingAmount(
-                Clearpay::parseAmount($paymentObjData['cart']->getTotalShippingCost()),
-                $paymentObjData['currency']
-            )
-            ->setCourier(array(
-                'shippedAt' => '',
-                'name' => $paymentObjData['carrier']->name,
-                'tracking' => '',
-                'priority' => 'STANDARD'
-            ));
-
-        if (!empty($paymentObjData['discountAmount'])) {
-            $clearpayPaymentObj->setDiscounts(array(
-                array(
-                    'displayName' => 'Shop discount',
-                    'amount' => array(
-                        Clearpay::parseAmount($paymentObjData['discountAmount']),
-                        $paymentObjData['currency']
-                    )
-                )
-            ));
-        }
-
-        $items = $paymentObjData['cart']->getProducts();
-        $products = array();
-        foreach ($items as $item) {
-            $products[] = array(
-                'name' => utf8_encode($item['name']),
-                'sku' => $item['reference'],
-                'quantity' => (int) $item['quantity'],
-                'price' => array(
-                    'amount' => Clearpay::parseAmount($item['price_wt']),
-                    'currency' => $paymentObjData['currency']
-                )
-            );
-        }
-        $clearpayPaymentObj->setItems($products);
-
-        $apiVersion = $this->getApiVersionPerRegion($paymentObjData['region']);
-        if ($apiVersion === 'v1') {
-            $clearpayPaymentObj = $this->addPaymentV1Options($clearpayPaymentObj, $paymentObjData);
-        } else {
-            $clearpayPaymentObj = $this->addPaymentV2Options($clearpayPaymentObj, $paymentObjData);
-        }
-
-        $header = $this->module->name . '/' . $this->module->version
-            . '(Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() . '; Merchant/' . $paymentObjData['publicKey']
-            . ') ' . _PS_BASE_URL_SSL_.__PS_BASE_URI__;
-        $clearpayPaymentObj->addHeader('User-Agent', $header);
-        $clearpayPaymentObj->addHeader('Country', $paymentObjData['countryCode']);
 
         $url = $paymentObjData['cancelUrl'];
+        try {
+            \Afterpay\SDK\Model::setAutomaticValidationEnabled(true);
+            $clearpayPaymentObj = new CreateCheckout();
+            $clearpayMerchantAccount = new ClearpayMerchantAccount();
+            $clearpayMerchantAccount
+                ->setMerchantId($paymentObjData['publicKey'])
+                ->setSecretKey($paymentObjData['secretKey'])
+                ->setApiEnvironment($paymentObjData['environment'])
+            ;
+            if (!is_null($paymentObjData['countryCode'])) {
+                $clearpayMerchantAccount->setCountryCode($paymentObjData['countryCode']);
+            }
+
+            $clearpayPaymentObj
+                ->setMerchant(array(
+                    'redirectConfirmUrl' => $paymentObjData['okUrl'],
+                    'redirectCancelUrl' => $paymentObjData['cancelUrl']
+                ))
+                ->setMerchantAccount($clearpayMerchantAccount)
+                ->setAmount(
+                    Clearpay::parseAmount($paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)),
+                    $paymentObjData['currency']
+                )
+                ->setTaxAmount(
+                    Clearpay::parseAmount(
+                        $paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)
+                        -
+                        $paymentObjData['cart']->getOrderTotal(false, Cart::BOTH)
+                    ),
+                    $paymentObjData['currency']
+                )
+                ->setConsumer(array(
+                    'phoneNumber' => $paymentObjData['billingAddress']->phone,
+                    'givenNames' => $paymentObjData['customer']->firstname,
+                    'surname' => $paymentObjData['customer']->lastname,
+                    'email' => $paymentObjData['customer']->email
+                ))
+                ->setBilling(array(
+                    'name' => $paymentObjData['billingAddress']->firstname . " " .
+                        $paymentObjData['billingAddress']->lastname,
+                    'line1' => $paymentObjData['billingAddress']->address1,
+                    'line2' => $paymentObjData['billingAddress']->address2,
+                    'suburb' => $paymentObjData['billingAddress']->city,
+                    'area1' => $paymentObjData['billingAddress']->city,
+                    'state' => $paymentObjData['billingStateCode'],
+                    'region' => $paymentObjData['billingStateCode'],
+                    'postcode' => $paymentObjData['billingAddress']->postcode,
+                    'countryCode' => $paymentObjData['billingCountryCode'],
+                    'phoneNumber' => $paymentObjData['billingAddress']->phone
+                ))
+                ->setShipping(array(
+                    'name' => $paymentObjData['shippingAddress']->firstname . " " .
+                        $paymentObjData['shippingAddress']->lastname,
+                    'line1' => $paymentObjData['shippingAddress']->address1,
+                    'line2' => $paymentObjData['shippingAddress']->address2,
+                    'suburb' => $paymentObjData['shippingAddress']->city,
+                    'area1' => $paymentObjData['shippingAddress']->city,
+                    'state' => $paymentObjData['shippingStateCode'],
+                    'region' => $paymentObjData['shippingStateCode'],
+                    'postcode' => $paymentObjData['shippingAddress']->postcode,
+                    'countryCode' => $paymentObjData['shippingCountryCode'],
+                    'phoneNumber' => $paymentObjData['shippingAddress']->phone
+                ))
+                ->setShippingAmount(
+                    Clearpay::parseAmount($paymentObjData['cart']->getTotalShippingCost()),
+                    $paymentObjData['currency']
+                )
+                ->setCourier(array(
+                    'shippedAt' => '',
+                    'name' => $paymentObjData['carrier']->name . '',
+                    'tracking' => '',
+                    'priority' => 'STANDARD'
+                ));
+
+            if (!empty($paymentObjData['discountAmount'])) {
+                $clearpayPaymentObj->setDiscounts(array(
+                    array(
+                        'displayName' => 'Shop discount',
+                        'amount' => array(
+                            Clearpay::parseAmount($paymentObjData['discountAmount']),
+                            $paymentObjData['currency']
+                        )
+                    )
+                ));
+            }
+
+            $items = $paymentObjData['cart']->getProducts();
+            $products = array();
+            foreach ($items as $item) {
+                $products[] = array(
+                    'name' => utf8_encode($item['name']),
+                    'sku' => $item['reference'],
+                    'quantity' => (int) $item['quantity'],
+                    'price' => array(
+                        'amount' => Clearpay::parseAmount($item['price_wt']),
+                        'currency' => $paymentObjData['currency']
+                    )
+                );
+            }
+            $clearpayPaymentObj->setItems($products);
+
+            $apiVersion = $this->getApiVersionPerRegion($paymentObjData['region']);
+            if ($apiVersion === 'v1') {
+                $clearpayPaymentObj = $this->addPaymentV1Options($clearpayPaymentObj, $paymentObjData);
+            } else {
+                $clearpayPaymentObj = $this->addPaymentV2Options($clearpayPaymentObj, $paymentObjData);
+            }
+
+            $header = $this->module->name . '/' . $this->module->version
+                . '(Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() . '; Merchant/' . $paymentObjData['publicKey']
+                . ') ' . _PS_BASE_URL_SSL_.__PS_BASE_URI__;
+            $clearpayPaymentObj->addHeader('User-Agent', $header);
+            $clearpayPaymentObj->addHeader('Country', $paymentObjData['countryCode']);
+        } catch (\Exception $exception) {
+            $this->saveLog($exception->getMessage(), 3);
+            return Tools::redirect($url);
+        }
+
         if (!$clearpayPaymentObj->isValid()) {
             $this->saveLog($clearpayPaymentObj->getValidationErrors(), 2);
             return Tools::redirect($url);
