@@ -1,21 +1,21 @@
 {*
- * This file is part of the official Clearpay module for PrestaShop.
+ * This file is part of the official Afterpay module for PrestaShop.
  *
- * @author    Clearpay <integrations@clearpay.com>
- * @copyright 2020 Clearpay
+ * @author    Afterpay <integrations@afterpay.com>
+ * @copyright 2020 Afterpay
  * @license   proprietary
  *}
 <style>
-    p.payment_module.Clearpay.ps_version_1-7 {
+    p.payment_module.Afterpay.ps_version_1-7 {
         margin-left: -5px;
         margin-top: -15px;
         margin-bottom: 0px;
     }
-    p.payment_module a.clearpay-checkout {
+    p.payment_module a.afterpay-checkout {
         background: url('{$ICON|escape:'htmlall':'UTF-8'}') 5px 5px no-repeat #fbfbfb;
         background-size: 79px;
     }
-    p.payment_module a.clearpay-checkout.ps_version_1-7 {
+    p.payment_module a.afterpay-checkout.ps_version_1-7 {
         background: none;
     }
     .payment-option img[src*='static.afterpay.com'] {
@@ -23,11 +23,11 @@
         padding-left: 5px;
         content:url('{$LOGO_BADGE|escape:'htmlall':'UTF-8'}');
     }
-    p.payment_module a.clearpay-checkout.ps_version_1-6 {
+    p.payment_module a.afterpay-checkout.ps_version_1-6 {
         background-color: #fbfbfb;
         max-height: 90px;
     }
-    p.payment_module a.clearpay-checkout.ps_version_1-6:after {
+    p.payment_module a.afterpay-checkout.ps_version_1-6:after {
         display: block;
         content: "\f054";
         position: absolute;
@@ -44,15 +44,14 @@
         background-color: #f6f6f6;
     }
 
-    #clearpay-method-content {
+    #afterpay-method-content {
         color: #7a7a7a;
         border: 1px solid #000;
         margin-bottom: 10px;
     }
-    .clearpay-header {
+    .afterpay-header {
         color: #7a7a7a;
         position: relative;
-        padding-left: 120px;
         background-color: #b2fce4;
         text-align: center;
         float: left;
@@ -62,81 +61,79 @@
         margin-bottom: 10px;
         padding-bottom: 5px;
     }
-    .clearpay-header img {
+    .afterpay-header img {
         height: 25px;
-        margin-top: 5px;
     }
-    .clearpay-header-img {
-        position: absolute;
-        top: 0;
-        left: 0;
+    .afterpay-header-img {
+        display: inline;
+        text-align: center;
     }
 
-    .clearpay-header-text1 {
+    .afterpay-header-text1 {
         display: inline;
         color: black;
         font-weight: bold;
     }
-    .clearpay-header-text2 {
+    .afterpay-header-text2 {
         display: inline;
     }
-    .clearpay-checkout-ps1-6-logo {
+    .afterpay-checkout-ps1-6-logo {
         height: 35px;
         margin-left: 10px;
         top: 30%;
         position: absolute;
         display: inline !important;
     }
-    .clearpay-checkout-ps1-6-logo-text {
+    .afterpay-checkout-ps1-6-logo-text {
         display: none;
     }
-    .clearpay-more-info-text {
+    .afterpay-more-info-text {
         padding: 1em 3em;
         text-align: center;
     }
-    .clearpay-terms {
+    .afterpay-terms {
         margin-top: 10px;
         display: inline-block;
     }
     @media only screen and (max-width: 1200px) {
-        .clearpay-header {
+        .afterpay-header {
             text-align: center;
             display: block;
             height: 65px !important;
         }
     }
     @media only screen and (max-width: 1200px) and (min-width: 990px)  {
-        .clearpay-header img {
+        .afterpay-header img {
             padding: 0;
         }
     }
     @media only screen and (max-width: 989px) and (min-width: 768px)  {
-        .clearpay-header img {
+        .afterpay-header img {
             padding: 0;
         }
-        .clearpay-header {
+        .afterpay-header {
             height: 70px !important;
         }
     }
     @media only screen and (max-width: 767px) and (min-width: 575px)  {
-        .clearpay-header img {
+        .afterpay-header img {
             padding: 0;
         }
-        .clearpay-header {
+        .afterpay-header {
             height: 65px !important;
         }
     }
     @media only screen and (max-width: 575px) {
-        .clearpay-header img {
+        .afterpay-header img {
             padding: 0;
         }
-        .clearpay-header {
+        .afterpay-header {
             height: 80px !important;
         }
-        .clearpay-checkout-ps1-6-logo {
+        .afterpay-checkout-ps1-6-logo {
             display: none;
         }
-        .clearpay-checkout-ps1-6-logo-text {
+        .afterpay-checkout-ps1-6-logo-text {
             display: inline;
         }
     }
@@ -145,10 +142,10 @@
     <div class="row">
         <div class="col-xs-12">
             <p class="payment_module">
-                <a class="clearpay-checkout clearpay-checkout ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" href="{$PAYMENT_URL|escape:'htmlall':'UTF-8'}">
+                <a class="afterpay-checkout afterpay-checkout ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" href="{$PAYMENT_URL|escape:'htmlall':'UTF-8'}">
                     {$TITLE|escape:'htmlall':'UTF-8'}
-                    <img class="clearpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo" src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
-                    <span class="clearpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo-text">{$LOGO_TEXT|escape:'htmlall':'UTF-8'}</span>
+                    <img class="afterpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo" src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
+                    <span class="afterpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo-text">{$LOGO_TEXT|escape:'htmlall':'UTF-8'}</span>
                 </a>
             </p>
         </div>
@@ -156,22 +153,16 @@
 {/if}
 {if $PS_VERSION === '1-7'}
     <section>
-        <div class="payment-method ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method" >
-            <div class="payment-method-content clearpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method-content">
-                <div class="clearpay-header">
-                    <div class="clearpay-header-img">
+        <div class="payment-method ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="afterpay-method" >
+            <div class="payment-method-content afterpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="afterpay-method-content">
+                <div class="afterpay-header">
+                    <div class="afterpay-header-img">
                         <img src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
                     </div>
-                    <div class="clearpay-header-text1">
-                        {$MORE_HEADER1|escape:'htmlall':'UTF-8'}
-                    </div>
-                    <div class="clearpay-header-text2">
-                        {$MORE_HEADER2|escape:'htmlall':'UTF-8'}
-                    </div>
                 </div>
-                <div class="clearpay-more-info-text">
-                    <div class="clearpay-more-info">
-                        {$MOREINFO_ONE|escape:'htmlall':'UTF-8'}
+                <div class="afterpay-more-info-text">
+                    <div class="afterpay-more-info">
+                        {$DESCRIPTION|escape:'htmlall':'UTF-8'}
                     </div>
                     <afterpay-placement
                             data-type="price-table"
@@ -180,9 +171,15 @@
                             data-locale="{$ISO_COUNTRY_CODE|escape:'htmlall':'UTF-8'}"
                             data-currency="{$CURRENCY|escape:'htmlall':'UTF-8'}">
                     </afterpay-placement>
-                    <a class="clearpay-terms" href="{$TERMS_AND_CONDITIONS_LINK|escape:'htmlall':'UTF-8'}" TARGET="_blank">
+                    <a class="afterpay-terms" href="{$TERMS_AND_CONDITIONS_LINK|escape:'htmlall':'UTF-8'}" TARGET="_blank">
                         {$TERMS_AND_CONDITIONS|escape:'htmlall':'UTF-8'}
                     </a>
+                    {if $ISO_COUNTRY_CODE == 'es_ES' }
+                        &nbsp;|&nbsp;
+                        <a href="javascript:void(0)" onclick="Afterpay.launchModal('{$ISO_COUNTRY_CODE|escape:'javascript':'UTF-8'}');">
+                            {$MORE_INFO_TEXT|escape:'htmlall':'UTF-8'}
+                        </a>
+                    {/if}
                 </div>
             </div>
         </div>

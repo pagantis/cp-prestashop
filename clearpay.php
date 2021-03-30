@@ -276,18 +276,23 @@ class Clearpay extends PaymentModule
     /**
      * Header hook
      */
-    public function hookHeader()
+    public function hookHeader($params)
     {
-        echo '<!-- CPVersion:'. $this->version.
-            ' PS:'._PS_VERSION_.
-            ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
-            ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
-            ' Region:'.Configuration::get('CLEARPAY_REGION').
-            ' Lang:'.$this->getCurrentLanguage().
-            ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
-            ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
-            ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
-            ' -->';
+        if (
+            Context::getContext()->controller->php_self === 'product' ||
+            Context::getContext()->controller->php_self === 'order'
+        ) {
+            echo '<!-- CPVersion:'. $this->version.
+                ' PS:'._PS_VERSION_.
+                ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
+                ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
+                ' Region:'.Configuration::get('CLEARPAY_REGION').
+                ' Lang:'.$this->getCurrentLanguage().
+                ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
+                ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
+                ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
+                ' -->';
+        }
         if (_PS_VERSION_ >= "1.7") {
             $this->context->controller->registerJavascript(
                 sha1(mt_rand(1, 90000)),
@@ -341,17 +346,13 @@ class Clearpay extends PaymentModule
                     Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 2, 4));
             }
             $templateConfigs['CURRENCY'] = $this->currency;
-            $templateConfigs['MORE_HEADER1'] = $this->l('Always interest-free.');
-            $templateConfigs['MORE_HEADER2'] = $this->l('No extra documentation. Instant approval.');
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
-            $moreInfo = $this->l('You will be redirected to Clearpay website to fill out your payment information.');
-            $moreInfo .= ' ' .$this->l('You will be redirected to our site to complete your order. Please note: ');
-            $moreInfo .= ' ' . $this->l('Clearpay can only be used as a payment method for orders with a shipping');
-            $moreInfo .= ' ' . $this->l('and billing address within the UK.');
-            $templateConfigs['MOREINFO_ONE'] = $moreInfo;
+            $description = $this->l('You will be redirected to Clearpay to fill out your payment information.');
+            $templateConfigs['DESCRIPTION'] = $description;
             $templateConfigs['TERMS_AND_CONDITIONS'] = $this->l('Terms and conditions');
             $termsLink = $this->l('https://www.clearpay.co.uk/en-GB/terms-of-service');
             $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $termsLink;
+            $templateConfigs['MORE_INFO_TEXT'] = $this->l('More info');
             $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
             $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
@@ -802,17 +803,16 @@ class Clearpay extends PaymentModule
                     . $this->l(' with Clearpay');
             }
             $templateConfigs['TITLE'] = $checkoutText;
+            $templateConfigs['CURRENCY'] = $this->currency;
             $templateConfigs['MORE_HEADER'] = $this->l('Instant approval decision - 4 interest-free payments of')
                 . ' ' . $amountWithCurrency;
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
-            $templateConfigs['MOREINFO_ONE'] = $this->l(
-                'You will be redirected to Clearpay website to fill out your 
-                payment information. You will be redirected to our site to complete your order. Please note: Clearpay 
-                can only be used as a payment method for orders with a shipping and billing address within the UK.'
-            );
+            $description = $this->l('You will be redirected to Clearpay to fill out your payment information.');
+            $templateConfigs['DESCRIPTION'] = $description;
             $templateConfigs['TERMS_AND_CONDITIONS'] = $this->l('Terms and conditions');
             $termsLink = $this->l('https://www.clearpay.co.uk/en-GB/terms-of-service');
             $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $termsLink;
+            $templateConfigs['MORE_INFO_TEXT'] = $this->l('More info');
             $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
             $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
