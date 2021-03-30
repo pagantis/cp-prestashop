@@ -1,8 +1,8 @@
 {*
- * This file is part of the official Clearpay module for PrestaShop.
+ * This file is part of the official Afterpay module for PrestaShop.
  *
- * @author    Clearpay <integrations@clearpay.com>
- * @copyright 2020 Clearpay
+ * @author    Afterpay <integrations@afterpay.com>
+ * @copyright 2020 Afterpay
  * @license   proprietary
  *}
 <style>
@@ -39,7 +39,7 @@
         background-color: #f6f6f6;
     }
 
-    #clearpay-method-content {
+    #afterpay-method-content {
         color: #7a7a7a;
         border: 1px solid #000;
         margin-bottom: 10px;
@@ -84,20 +84,20 @@
         text-align: center !important;
     }
 
-    .ps-clearpay-container {
+    .ps-afterpay-container {
         display: grid;
         max-width: 750px;
         height: auto;
         grid-template-columns: repeat(4, 1fr);
         grid-template-rows: min-content  min-content  min-content;
         grid-template-areas:
-      "cp-ps-checkout-header  cp-ps-checkout-header  cp-ps-checkout-header  cp-ps-checkout-header"
-      "cp-placement-wrapper cp-placement-wrapper cp-placement-wrapper cp-placement-wrapper"
-      "cp-placement-wrapper cp-placement-wrapper cp-placement-wrapper cp-placement-wrapper"
+      "ap-ps-checkout-header  ap-ps-checkout-header  ap-ps-checkout-header  ap-ps-checkout-header"
+      "ap-placement-wrapper ap-placement-wrapper ap-placement-wrapper ap-placement-wrapper"
+      "ap-placement-wrapper ap-placement-wrapper ap-placement-wrapper ap-placement-wrapper"
     }
 
-    .cp-ps-checkout-header {
-        grid-area: cp-ps-checkout-header ;
+    .ap-ps-checkout-header {
+        grid-area: ap-ps-checkout-header ;
         display: -webkit-box;
         display: -ms-flexbox;
         display: flex;
@@ -115,21 +115,21 @@
         padding: 7px 0 !important;
     }
 
-    .cp-ps-header-row .cp-ps-header-img {
+    .ap-ps-header-row .ap-ps-header-img {
         align-self: center;
         width: 170px;
         max-height: 50px;
         max-width: 170px;
     }
 
-    .cp-row-text {
+    .ap-row-text {
         display: -webkit-box;
         display: -ms-flexbox;
         display: flex;
         flex-direction: column;
     }
 
-    .cp-ps-header-row {
+    .ap-ps-header-row {
         display: -webkit-box;
         display: -ms-flexbox;
         display: flex;
@@ -139,7 +139,7 @@
         align-items: center;
     }
 
-    .cp-row-text .cp-header-text {
+    .ap-row-text .ap-header-text {
         max-height: fit-content;
         align-self: center;
         -webkit-flex-wrap: wrap;
@@ -147,42 +147,63 @@
         margin-bottom: 0 !important;
     }
 
-    .ps-cp-placement-container {
+    .ap-placement-container {
         padding: 7px;
     }
 
 
-    .cp-ps-placement-wrapper {
-        grid-area: cp-placement-wrapper;
+    .ap-ps-placement-wrapper {
+        grid-area: ap-placement-wrapper;
         display: inline-flex;
         justify-content: center;
         flex-direction: column;
     }
 
-    .copy-container .cp-ps-checkout-more-info-1 {
+    .ap-ps-placement-wrapper .ap-ps-checkout-more-info-text {
         margin: 10px;
         text-align: center;
-        font-size: .850rem;
+        font-size: .800rem;
     }
 
-    .clearpay-terms {
+    .ap-terms-wrapper{
+        display: inline-flex;
+        flex-direction: row;
+        justify-content: center;
+        font-size: 14px;
+    }
+    .afterpay-terms-link {
         display: inline-block;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
         padding-bottom: 7px;
-    }
-
-    .cp-ps-header-img img {
-
+        padding-left: 7px;
     }
 
     @media (max-width: 575px) {
 
-        .cp-ps-header-img {
+        .ap-ps-header-img {
             align-self: center;
+            width: 100px;
         }
 
-        .cp-ps-header-row {
+        .ap-ps-header-row {
             flex-direction: column;
+        }
+        .ap-terms-wrapper{
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            font-size: 12px;
+        }
+        .afterpay-terms-link {
+            display: inline-block;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding-bottom: 7px;
+            font-size: 12px;
+            padding-left: 5px;
         }
 
     }
@@ -193,7 +214,8 @@
             <p class="payment_module">
                 <a class="clearpay-checkout clearpay-checkout ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" href="{$PAYMENT_URL|escape:'htmlall':'UTF-8'}">
                     {$TITLE|escape:'htmlall':'UTF-8'}
-                    <img class="clearpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo" src="{$LOGO|escape:'htmlall':'UTF-8'}">
+                    <img class="afterpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo" src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
+                    <span class="afterpay-checkout-ps{$PS_VERSION|escape:'htmlall':'UTF-8'}-logo-text">{$LOGO_TEXT|escape:'htmlall':'UTF-8'}</span>
                 </a>
             </p>
         </div>
@@ -202,22 +224,20 @@
 {if $PS_VERSION === '1-7'}
     <section>
         <div class="payment-method ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method">
-            <div class="payment-method-content clearpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method-content">
-                <div class="ps-clearpay-container">
-                    <div class="cp-ps-checkout-header">
-                        <div class="cp-row-text">
-                            <div class="cp-ps-header-row">
-                                <img class="cp-ps-header-img" src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
-                                <p class="cp-header-text">{$MORE_HEADER1|escape:'htmlall':'UTF-8'}</p>
+            <div class="payment-method-content afterpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="afterpay-method-content">
+                <div class="ps-afterpay-container">
+                    <div class="ap-ps-checkout-header">
+                        <div class="ap-row-text">
+                            <div class="ap-ps-header-row">
+                                <img class="ap-ps-header-img" src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
                             </div>
-                            <p class="cp-header-text">{$MORE_HEADER2|escape:'htmlall':'UTF-8'} </p>
                         </div>
                     </div>
-                    <div class="cp-ps-placement-wrapper">
-                        <div class="copy-container">
-                            <p class="cp-ps-checkout-more-info-1">{$MOREINFO_ONE|escape:'htmlall':'UTF-8'}</p>
+                    <div class="ap-ps-placement-wrapper">
+                        <div class="ap-more-info-container">
+                            <p class="ap-ps-checkout-more-info-text">{$DESCRIPTION|escape:'htmlall':'UTF-8'}</p>
                         </div>
-                        <div class="ps-cp-placement-container">
+                        <div class="ap-placement-container">
                             <afterpay-placement
                                     data-type="price-table"
                                     data-amount="{$TOTAL_AMOUNT|escape:'htmlall':'UTF-8'}"
@@ -227,9 +247,25 @@
                                     data-currency="{$CURRENCY|escape:'htmlall':'UTF-8'}">
                             </afterpay-placement>
                         </div>
-                        <a class="clearpay-terms" href="{$TERMS_AND_CONDITIONS_LINK|escape:'htmlall':'UTF-8'}" TARGET="_blank">
-                            {$TERMS_AND_CONDITIONS|escape:'htmlall':'UTF-8'}
-                        </a>
+                        <div class="ap-terms-wrapper">
+                            {if $ISO_COUNTRY_CODE == 'es_ES' }
+                                <a class="afterpay-terms-link" href="{$TERMS_AND_CONDITIONS_LINK|escape:'htmlall':'UTF-8'}" TARGET="_blank">
+                                    {$TERMS_AND_CONDITIONS|escape:'htmlall':'UTF-8'}
+                                </a>
+                                {if $IS_MOBILE_LAYOUT == "0"}
+                                    &nbsp;|&nbsp;
+                                {else}
+                                    &nbsp;-&nbsp;
+                                {/if}
+                                <a class="afterpay-terms-link" href="javascript:void(0)" onclick="Afterpay.launchModal('{$ISO_COUNTRY_CODE|escape:'javascript':'UTF-8'}');">
+                                    {$MORE_INFO_TEXT|escape:'htmlall':'UTF-8'}
+                                </a>
+                            {else}
+                                <a class="afterpay-terms-link" href="{$TERMS_AND_CONDITIONS_LINK|escape:'htmlall':'UTF-8'}" TARGET="_blank">
+                                    {$TERMS_AND_CONDITIONS|escape:'htmlall':'UTF-8'}
+                                </a>
+                            {/if}
+                        </div>
                     </div>
                 </div>
             </div>

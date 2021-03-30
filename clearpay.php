@@ -276,18 +276,23 @@ class Clearpay extends PaymentModule
     /**
      * Header hook
      */
-    public function hookHeader()
+    public function hookHeader($params)
     {
-        echo '<!-- CPVersion:'. $this->version.
-            ' PS:'._PS_VERSION_.
-            ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
-            ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
-            ' Region:'.Configuration::get('CLEARPAY_REGION').
-            ' Lang:'.$this->getCurrentLanguage().
-            ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
-            ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
-            ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
-            ' -->';
+        if (
+            Context::getContext()->controller->php_self === 'product' ||
+            Context::getContext()->controller->php_self === 'order'
+        ) {
+            echo '<!-- CPVersion:'. $this->version.
+                ' PS:'._PS_VERSION_.
+                ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
+                ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
+                ' Region:'.Configuration::get('CLEARPAY_REGION').
+                ' Lang:'.$this->getCurrentLanguage().
+                ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
+                ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
+                ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
+                ' -->';
+        }
         if (_PS_VERSION_ >= "1.7") {
             $this->context->controller->registerJavascript(
                 sha1(mt_rand(1, 90000)),
@@ -341,24 +346,25 @@ class Clearpay extends PaymentModule
                     Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 2, 4));
             }
             $templateConfigs['CURRENCY'] = $this->currency;
-            $templateConfigs['MORE_HEADER1'] = $this->l('Always interest-free.');
-            $templateConfigs['MORE_HEADER2'] = $this->l('No extra documentation. Instant approval.');
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
-            $moreInfo = $this->l('You will be redirected to Clearpay to fill out your payment information. ');
-            $templateConfigs['MOREINFO_ONE'] = $moreInfo;
+            $description = $this->l('You will be redirected to Clearpay to fill out your payment information.');
+            $templateConfigs['DESCRIPTION'] = $description;
             $templateConfigs['TERMS_AND_CONDITIONS'] = $this->l('Terms and conditions');
             $termsLink = $this->l('https://www.clearpay.co.uk/en-GB/terms-of-service');
             $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $termsLink;
+            $templateConfigs['MORE_INFO_TEXT'] = $this->l('More info');
             $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
             $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
             $mobileViewLayout = Tools::strtolower('four-by-one');
+            $isMobileLayout = $this->context->isMobile();
             if ($this->context->isMobile()){
                 $mobileViewLayout = Tools::strtolower('two-by-two');
             }
             $templateConfigs['AP_MOBILE_LAYOUT'] = $mobileViewLayout;
+            $templateConfigs['IS_MOBILE_LAYOUT'] = $isMobileLayout;
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
 
             $this->context->smarty->assign($templateConfigs);
@@ -804,25 +810,28 @@ class Clearpay extends PaymentModule
                     . $this->l(' with Clearpay');
             }
             $templateConfigs['TITLE'] = $checkoutText;
+            $templateConfigs['CURRENCY'] = $this->currency;
             $templateConfigs['MORE_HEADER'] = $this->l('Instant approval decision - 4 interest-free payments of')
                 . ' ' . $amountWithCurrency;
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
-            $templateConfigs['MOREINFO_ONE'] = $this->l(
-                'You will be redirected to Clearpay to fill out your payment information. '
-            );
+            $description = $this->l('You will be redirected to Clearpay to fill out your payment information.');
+            $templateConfigs['DESCRIPTION'] = $description;
             $templateConfigs['TERMS_AND_CONDITIONS'] = $this->l('Terms and conditions');
             $termsLink = $this->l('https://www.clearpay.co.uk/en-GB/terms-of-service');
             $templateConfigs['TERMS_AND_CONDITIONS_LINK'] = $termsLink;
+            $templateConfigs['MORE_INFO_TEXT'] = $this->l('More info');
             $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
             $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
             $mobileViewLayout = Tools::strtolower('four-by-one');
+            $isMobileLayout = $this->context->isMobile();
             if ($this->context->isMobile()){
                 $mobileViewLayout = Tools::strtolower('two-by-two');
             }
             $templateConfigs['AP_MOBILE_LAYOUT'] = $mobileViewLayout;
+            $templateConfigs['IS_MOBILE_LAYOUT'] = $isMobileLayout;
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
 
             $this->context->smarty->assign($templateConfigs);
