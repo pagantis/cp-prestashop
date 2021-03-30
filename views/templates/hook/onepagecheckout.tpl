@@ -83,9 +83,108 @@
     .clearpay-more-info {
         text-align: center !important;
     }
+
+    .ps-clearpay-container {
+        display: grid;
+        max-width: 750px;
+        height: auto;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: min-content  min-content  min-content;
+        grid-template-areas:
+      "cp-ps-checkout-header  cp-ps-checkout-header  cp-ps-checkout-header  cp-ps-checkout-header"
+      "cp-placement-wrapper cp-placement-wrapper cp-placement-wrapper cp-placement-wrapper"
+      "cp-placement-wrapper cp-placement-wrapper cp-placement-wrapper cp-placement-wrapper"
+    }
+
+    .cp-ps-checkout-header {
+        grid-area: cp-ps-checkout-header ;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        align-content: center;
+        background-color: #b2fce4;
+        color: #7a7a7a;
+        flex-direction: row;
+        float: left;
+        font-size: .875rem;
+        justify-content: center;
+        min-height: 35px;
+        position: relative;
+        text-align: center;
+        width: 100%;
+        padding: 7px 0 !important;
+    }
+
+    .cp-ps-header-row .cp-ps-header-img {
+        align-self: center;
+        width: 170px;
+        max-height: 50px;
+        max-width: 170px;
+    }
+
+    .cp-row-text {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cp-ps-header-row {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        flex-wrap: nowrap;
+        max-height: fit-content;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .cp-row-text .cp-header-text {
+        max-height: fit-content;
+        align-self: center;
+        -webkit-flex-wrap: wrap;
+        flex-wrap: wrap;
+        margin-bottom: 0 !important;
+    }
+
+    .ps-cp-placement-container {
+        padding: 7px;
+    }
+
+
+    .cp-ps-placement-wrapper {
+        grid-area: cp-placement-wrapper;
+        display: inline-flex;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .copy-container .cp-ps-checkout-more-info-1 {
+        margin: 10px;
+        text-align: center;
+        font-size: .850rem;
+    }
+
     .clearpay-terms {
-        margin-top: 10px;
         display: inline-block;
+        text-align: center;
+        padding-bottom: 7px;
+    }
+
+    .cp-ps-header-img img {
+
+    }
+
+    @media (max-width: 575px) {
+
+        .cp-ps-header-img {
+            align-self: center;
+        }
+
+        .cp-ps-header-row {
+            flex-direction: column;
+        }
+
     }
 </style>
 {if $PS_VERSION !== '1-7'}
@@ -101,36 +200,39 @@
     </div>
 {/if}
 {if $PS_VERSION === '1-7'}
-<section>
-    <div class="payment-method ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method" >
-        <div class="payment-method-content clearpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method-content">
-            <div class="clearpay-header">
-                <div class="clearpay-header-img">
-                    <img src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
+    <section>
+        <div class="payment-method ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method">
+            <div class="payment-method-content clearpay ps_version_{$PS_VERSION|escape:'htmlall':'UTF-8'}" id="clearpay-method-content">
+                <div class="ps-clearpay-container">
+                    <div class="cp-ps-checkout-header">
+                        <div class="cp-row-text">
+                            <div class="cp-ps-header-row">
+                                <img class="cp-ps-header-img" src="{$LOGO_BADGE|escape:'htmlall':'UTF-8'}">
+                                <p class="cp-header-text">{$MORE_HEADER1|escape:'htmlall':'UTF-8'}</p>
+                            </div>
+                            <p class="cp-header-text">{$MORE_HEADER2|escape:'htmlall':'UTF-8'} </p>
+                        </div>
+                    </div>
+                    <div class="cp-ps-placement-wrapper">
+                        <div class="copy-container">
+                            <p class="cp-ps-checkout-more-info-1">{$MOREINFO_ONE|escape:'htmlall':'UTF-8'}</p>
+                        </div>
+                        <div class="ps-cp-placement-container">
+                            <afterpay-placement
+                                    data-type="price-table"
+                                    data-amount="{$TOTAL_AMOUNT|escape:'htmlall':'UTF-8'}"
+                                    data-price-table-theme="white"
+                                    data-mobile-view-layout="{$AP_MOBILE_LAYOUT|escape:'htmlall':'UTF-8'}"
+                                    data-locale="{$ISO_COUNTRY_CODE|escape:'htmlall':'UTF-8'}"
+                                    data-currency="{$CURRENCY|escape:'htmlall':'UTF-8'}">
+                            </afterpay-placement>
+                        </div>
+                        <a class="clearpay-terms" href="{$TERMS_AND_CONDITIONS_LINK|escape:'htmlall':'UTF-8'}" TARGET="_blank">
+                            {$TERMS_AND_CONDITIONS|escape:'htmlall':'UTF-8'}
+                        </a>
+                    </div>
                 </div>
-                <div class="clearpay-header-text1">
-                    {$MORE_HEADER1|escape:'htmlall':'UTF-8'}
-                </div>
-                <div class="clearpay-header-text2">
-                    {$MORE_HEADER2|escape:'htmlall':'UTF-8'}
-                </div>
-            </div>
-            <div class="clearpay-more-info-text">
-                <div class="clearpay-more-info">
-                    {$MOREINFO_ONE|escape:'htmlall':'UTF-8'}
-                </div>
-                <afterpay-placement
-                        data-type="price-table"
-                        data-amount="{$TOTAL_AMOUNT|escape:'htmlall':'UTF-8'}"
-                        data-price-table-theme="white"
-                        data-locale="{$ISO_COUNTRY_CODE|escape:'htmlall':'UTF-8'}"
-                        data-currency="{$CURRENCY|escape:'htmlall':'UTF-8'}">
-                </afterpay-placement>
-                <a class="clearpay-terms" href="{$TERMS_AND_CONDITIONS_LINK|escape:'htmlall':'UTF-8'}" TARGET="_blank">
-                    {$TERMS_AND_CONDITIONS|escape:'htmlall':'UTF-8'}
-                </a>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 {/if}
