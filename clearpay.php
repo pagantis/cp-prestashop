@@ -344,10 +344,7 @@ class Clearpay extends PaymentModule
             $templateConfigs['MORE_HEADER1'] = $this->l('Always interest-free.');
             $templateConfigs['MORE_HEADER2'] = $this->l('No extra documentation. Instant approval.');
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
-            $moreInfo = $this->l('You will be redirected to Clearpay website to fill out your payment information.');
-            $moreInfo .= ' ' .$this->l('You will be redirected to our site to complete your order. Please note: ');
-            $moreInfo .= ' ' . $this->l('Clearpay can only be used as a payment method for orders with a shipping');
-            $moreInfo .= ' ' . $this->l('and billing address within the UK.');
+            $moreInfo = $this->l('You will be redirected to Clearpay to fill out your payment information. ');
             $templateConfigs['MOREINFO_ONE'] = $moreInfo;
             $templateConfigs['TERMS_AND_CONDITIONS'] = $this->l('Terms and conditions');
             $termsLink = $this->l('https://www.clearpay.co.uk/en-GB/terms-of-service');
@@ -357,6 +354,11 @@ class Clearpay extends PaymentModule
             $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
+            $mobileViewLayout = Tools::strtolower('four-by-one');
+            if ($this->context->isMobile()){
+                $mobileViewLayout = Tools::strtolower('two-by-two');
+            }
+            $templateConfigs['AP_MOBILE_LAYOUT'] = $mobileViewLayout;
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
 
             $this->context->smarty->assign($templateConfigs);
@@ -806,9 +808,7 @@ class Clearpay extends PaymentModule
                 . ' ' . $amountWithCurrency;
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
             $templateConfigs['MOREINFO_ONE'] = $this->l(
-                'You will be redirected to Clearpay website to fill out your 
-                payment information. You will be redirected to our site to complete your order. Please note: Clearpay 
-                can only be used as a payment method for orders with a shipping and billing address within the UK.'
+                'You will be redirected to Clearpay to fill out your payment information. '
             );
             $templateConfigs['TERMS_AND_CONDITIONS'] = $this->l('Terms and conditions');
             $termsLink = $this->l('https://www.clearpay.co.uk/en-GB/terms-of-service');
@@ -818,6 +818,11 @@ class Clearpay extends PaymentModule
             $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
+            $mobileViewLayout = Tools::strtolower('four-by-one');
+            if ($this->context->isMobile()){
+                $mobileViewLayout = Tools::strtolower('two-by-two');
+            }
+            $templateConfigs['AP_MOBILE_LAYOUT'] = $mobileViewLayout;
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
 
             $this->context->smarty->assign($templateConfigs);
