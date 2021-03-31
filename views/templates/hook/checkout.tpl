@@ -183,6 +183,7 @@
 		text-align: center;
 		padding-bottom: 7px;
 		padding-left: 7px;
+		padding-right: 7px;
 	}
 
 	@media only screen and (max-width: 575px) {
@@ -209,6 +210,7 @@
 			padding-bottom: 7px;
 			font-size: 12px;
 			padding-left: 5px;
+			padding-right: 5px;
 		}
 
 	}
@@ -258,7 +260,9 @@
 	                                {$TERMS_AND_CONDITIONS|escape:'htmlall':'UTF-8'}
 								</a>
                                 {if $IS_MOBILE_LAYOUT == "0"}
-	                                &nbsp;|&nbsp;
+			                        &nbsp;|&nbsp;
+                                {else}
+			                        &nbsp;-&nbsp;
                                 {/if}
 		                        <a class="afterpay-terms-link" href="javascript:void(0)" onclick="Afterpay.launchModal('{$ISO_COUNTRY_CODE|escape:'javascript':'UTF-8'}');">
 	                            {$MORE_INFO_TEXT|escape:'htmlall':'UTF-8'}
