@@ -358,6 +358,13 @@ class Clearpay extends PaymentModule
             $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
+            $mobileViewLayout = Tools::strtolower('four-by-one');
+            $isMobileLayout = $this->context->isMobile();
+            if ($this->context->isMobile()){
+                $mobileViewLayout = Tools::strtolower('two-by-two');
+            }
+            $templateConfigs['AP_MOBILE_LAYOUT'] = $mobileViewLayout;
+            $templateConfigs['IS_MOBILE_LAYOUT'] = $isMobileLayout;
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
 
             $this->context->smarty->assign($templateConfigs);
@@ -818,6 +825,13 @@ class Clearpay extends PaymentModule
             $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
+            $mobileViewLayout = Tools::strtolower('four-by-one');
+            $isMobileLayout = $this->context->isMobile();
+            if ($this->context->isMobile()){
+                $mobileViewLayout = Tools::strtolower('two-by-two');
+            }
+            $templateConfigs['AP_MOBILE_LAYOUT'] = $mobileViewLayout;
+            $templateConfigs['IS_MOBILE_LAYOUT'] = $isMobileLayout;
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
 
             $this->context->smarty->assign($templateConfigs);
