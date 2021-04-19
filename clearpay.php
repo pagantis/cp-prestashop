@@ -20,6 +20,9 @@ if (!defined('_PS_VERSION_')) {
  */
 class Clearpay extends PaymentModule
 {
+    /** Product Name */
+    const PRODUCT_PAYMENT_NAME = "Clearpay";
+
     /**
      * Available currency
      */
@@ -1079,12 +1082,18 @@ class Clearpay extends PaymentModule
 
     /**
      * Hook Action for Order Status Update (handles Refunds)
-     * @param array $params
+     * @param $params
      * @return bool
-     * since 1.0.0
+     * @throws \Afterpay\SDK\Exception\InvalidArgumentException
+     * @throws \Afterpay\SDK\Exception\NetworkException
+     * @throws \Afterpay\SDK\Exception\ParsingException
      */
     public function hookActionOrderStatusUpdate($params)
     {
+        if (empty($order) || empty($order->payment) || $order->payment != self::PRODUCT_PAYMENT_NAME) {
+            return false;
+        }
+
         $newOrderStatus = null;
         $order = null;
         if (!empty($params) && !empty($params['id_order'])) {
@@ -1142,7 +1151,8 @@ class Clearpay extends PaymentModule
      */
     public function hookActionOrderSlipAdd($params)
     {
-        if (!empty($params) && !empty($params["order"]->id)) {
+        if (!empty($params) && !empty($params["order"]->id) &&
+            !empty($params["order"]->payment) && $params["order"]->payment == self::PRODUCT_PAYMENT_NAME) {
             $order = new Order((int)$params["order"]->id);
         } else {
             return false;

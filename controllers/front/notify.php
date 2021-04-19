@@ -409,8 +409,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
     private function captureClearpayPayment()
     {
         $immediatePaymentCaptureRequest = new ClearpayImmediatePaymentCaptureRequest(array(
-            'token' => $this->clearpayOrder->token,
-            'merchantReference' => $this->config['publicKey']
+            'token' => $this->clearpayOrder->token
         ));
         $immediatePaymentCaptureRequest->setMerchantAccount($this->clearpayMerchantAccount);
         $uri = '/' . $this->config['apiVersion'] . '/payments/capture/';
