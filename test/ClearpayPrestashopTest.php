@@ -39,8 +39,8 @@ abstract class ClearpayPrestashopTest extends TestCase
     protected $configuration = array(
         'username'      => 'demo@prestashop.com',
         'password'      => 'prestashop_demo',
-        'publicKey'     => 'tk_05f3993ef51d41209c52eac7',
-        'secretKey'     => 'c580df9e0b7b40c3',
+        'publicKey'     => '800000001',
+        'secretKey'     => '27824l8tn9p3nxaernjd8r2zplprsoj3zi1i7ddcbuwy2d9pyezc4i6p4qup9o2qwkfrpsru71hizbyvon4z7br2uhxxl3lst8f9i6g1thyue1ihlynca73eiu7jlyhu',
         'birthdate'     => '05/05/1989',
         'firstname'     => 'Jøhn',
         'lastname'      => 'Dōès',

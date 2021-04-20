@@ -47,7 +47,7 @@ abstract class AbstractPs16Selenium extends ClearpayPrestashopTest
         $fileInputSearch = $moduleInstallBlock->name('file');
         $fileInput = $this->webDriver->findElement($fileInputSearch);
         $fileInput->setFileDetector(new LocalFileDetector());
-        $fileInput->sendKeys(__DIR__.'/../../clearpay.zip');
+        $fileInput->sendKeys(__DIR__.'/../../module.zip');
         $submitButton = WebDriverBy::name('download');
         $condition = WebDriverExpectedCondition::elementToBeClickable($submitButton);
         $this->waitUntil($condition);

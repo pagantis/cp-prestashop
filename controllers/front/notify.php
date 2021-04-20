@@ -18,6 +18,9 @@ use Afterpay\SDK\MerchantAccount as ClearpayMerchant;
  */
 class ClearpayNotifyModuleFrontController extends AbstractController
 {
+    /** Product Name */
+    const PRODUCT_NAME = "Clearpay";
+
     /** Cart tablename */
     const CART_TABLE = 'clearpay_cart_process';
 
@@ -27,7 +30,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
     /**
      * Seconds to expire a locked request
      */
-    const CONCURRENCY_TIMEOUT = 10;
+    const CONCURRENCY_TIMEOUT = 1;
 
     /**
      * mismatch amount threshold in cents
@@ -49,11 +52,6 @@ class ClearpayNotifyModuleFrontController extends AbstractController
      * @var string $token
      */
     protected $token;
-
-    /**
-     * @var string $productName
-     */
-    protected $productName;
 
     /**
      * @var int $merchantOrderId
@@ -99,6 +97,19 @@ class ClearpayNotifyModuleFrontController extends AbstractController
      * @var mixed $config
      */
     protected $config;
+    /**
+     * Default API Version per region
+     *
+     * @var array
+     */
+    public $defaultApiVersionPerRegion = array(
+        'AU' => 'v2',
+        'CA' => 'v2',
+        'ES' => 'v1',
+        'GB' => 'v2',
+        'NZ' => 'v2',
+        'US' => 'v2',
+    );
 
     /**
      * @var Object $jsonResponse
@@ -115,6 +126,18 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         if (in_array($func, array('l')) && !method_exists($this, $func)) {
             return $params[0];
         }
+    }
+
+    /**
+     * @param $region
+     * @return string
+     */
+    public function getApiVersionPerRegion($region = '')
+    {
+        if (isset($this->defaultApiVersionPerRegion[$region])) {
+            return $this->defaultApiVersionPerRegion[$region];
+        }
+        return json_encode(array($region));
     }
 
     /**
@@ -155,7 +178,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         try {
             $this->unblockConcurrency($this->merchantCartId);
         } catch (\Exception $exception) {
-            $this->saveLog($exception->getMessage(), null, 2);
+            $this->saveLog($exception->getMessage(), 3);
         }
 
         return $this->finishProcess(false);
@@ -185,16 +208,13 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         if ($this->merchantCartId == '') {
             throw new \Exception("Merchant cart id not provided in callback url");
         }
-        $this->productName = "Clearpay";
 
         $callbackOkUrl = $this->context->link->getPageLink('order-confirmation', null, null);
         $callbackKoUrl = $this->context->link->getPageLink('order', null, null, array('step'=>3));
 
         $this->config = array(
-            'urlOK' => (Clearpay::getExtraConfig('URL_OK') !== '') ?
-                Clearpay::getExtraConfig('URL_OK') : $callbackOkUrl,
-            'urlKO' => (Clearpay::getExtraConfig('URL_KO') !== '') ?
-                Clearpay::getExtraConfig('URL_KO') : $callbackKoUrl,
+            'urlOK' => $callbackOkUrl,
+            'urlKO' => $callbackKoUrl,
             'secureKey' => Tools::getValue('key'),
         );
 
@@ -202,6 +222,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         $this->config['privateKey'] = Configuration::get('CLEARPAY_SECRET_KEY');
         $this->config['environment'] = Configuration::get('CLEARPAY_ENVIRONMENT');
         $this->config['region'] = Configuration::get('CLEARPAY_REGION');
+        $this->config['apiVersion'] = $this->getApiVersionPerRegion($this->config['region']);
 
         $this->merchantOrderId = $this->getMerchantOrderId();
 
@@ -219,7 +240,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
 
         if (!($this->config['secureKey'] && Module::isEnabled(self::CODE))) {
             // This exception is only for Prestashop
-            throw new \Exception('Can\'t process Clearpay order, module may not be enabled');
+            throw new \Exception('Can\'t process ' . self::PRODUCT_NAME . ' order, module may not be enabled');
         }
     }
 
@@ -271,7 +292,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         $this->clearpayOrderId = Db::getInstance()->getValue($sql);
 
         if (empty($this->clearpayOrderId)) {
-            throw new \Exception("Clearpay order id not found on clearpay_orders table");
+            throw new \Exception(self::PRODUCT_NAME . ' order id not found on clearpay_orders table');
         }
     }
 
@@ -296,14 +317,17 @@ class ClearpayNotifyModuleFrontController extends AbstractController
     private function getClearpayOrder()
     {
         $getOrderRequest = new ClearpayRequest();
+        $uri = '/' . $this->config['apiVersion'] . '/';
+        $uri .= ($this->config['apiVersion'] === 'v1') ? 'orders/' : 'checkouts/';
         $getOrderRequest
             ->setMerchantAccount($this->clearpayMerchantAccount)
-            ->setUri("/v1/orders/" . $this->clearpayOrderId)
+            ->setUri($uri . $this->clearpayOrderId)
         ;
         $getOrderRequest->send();
 
         if ($getOrderRequest->getResponse()->getHttpStatusCode() >= 400) {
-            throw new \Exception($this->l('Unable to retrieve order from Clearpay.') . $this->clearpayOrderId);
+            throw new \Exception($this->l('Unable to retrieve order from ') . self::PRODUCT_NAME .
+                ': ' . $this->clearpayOrderId);
         }
         $this->clearpayOrder = $getOrderRequest->getResponse()->getParsedBody();
     }
@@ -315,17 +339,23 @@ class ClearpayNotifyModuleFrontController extends AbstractController
      */
     public function validateAmount()
     {
-        $totalAmount = (string) $this->clearpayOrder->totalAmount->amount;
+        if ($this->config['apiVersion'] === 'v1') {
+            $cpAmount = $this->clearpayOrder->totalAmount->amount;
+        } else {
+            $cpAmount = $this->clearpayOrder->amount->amount;
+        }
+        $totalAmount = (string) $cpAmount;
         $merchantAmount = (string) ($this->merchantCart->getOrderTotal(true, Cart::BOTH));
         if ($totalAmount != $merchantAmount) {
-            $numberClearpayAmount = (integer) (100 * $this->clearpayOrder->totalAmount->amount);
+            $numberClearpayAmount = (integer) (100 * $cpAmount);
             $numberMerchantAmount = (integer) (100 * $this->merchantCart->getOrderTotal(true, Cart::BOTH));
             $amountDff =  $numberMerchantAmount - $numberClearpayAmount;
             if (abs($amountDff) > self::MISMATCH_AMOUNT_THRESHOLD) {
                 $this->mismatchError = true;
                 $amountMismatchError = 'Amount mismatch in PrestaShop Cart #'. $this->merchantCartId .
-                    ' compared with Clearpay Order: ' . $this->clearpayOrderId .
-                    '. The Cart in PrestaShop has an amount of ' . $merchantAmount . ' and in Clearpay ' . $totalAmount;
+                    ' compared with ' . self::PRODUCT_NAME . ' Order: ' . $this->clearpayOrderId .
+                    '. The Cart in PrestaShop has an amount of: ' . $merchantAmount . ' and in ' . self::PRODUCT_NAME .
+                    ' of: ' . $totalAmount;
 
                 $this->saveLog($amountMismatchError, 3);
                 throw new \Exception($amountMismatchError);
@@ -358,7 +388,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
             $results = Db::getInstance()->ExecuteS($sql);
             if (is_array($results) && count($results) === 1) {
                 $exceptionMessage = sprintf(
-                    "Order was already created [cartId=%s][Token=%s][clearpayOrderId=%s]",
+                    "Order was already created [cartId=%s][Token=%s][" . self::PRODUCT_NAME . "=%s]",
                     $this->merchantCartId,
                     $this->token,
                     $this->clearpayOrderId
@@ -379,15 +409,16 @@ class ClearpayNotifyModuleFrontController extends AbstractController
     private function captureClearpayPayment()
     {
         $immediatePaymentCaptureRequest = new ClearpayImmediatePaymentCaptureRequest(array(
-            'token' => $this->clearpayOrder->token,
-            'merchantReference' => $this->config['publicKey']
+            'token' => $this->clearpayOrder->token
         ));
         $immediatePaymentCaptureRequest->setMerchantAccount($this->clearpayMerchantAccount);
+        $uri = '/' . $this->config['apiVersion'] . '/payments/capture/';
+        $immediatePaymentCaptureRequest->setUri($uri);
         $immediatePaymentCaptureRequest->send();
         if ($immediatePaymentCaptureRequest->getResponse()->getHttpStatusCode() >= 400) {
             $this->paymentDeclined = true;
             throw new \Exception(
-                $this->l('Clearpay capture payment error, order token: ') . $this->token . '. ' .
+                self::PRODUCT_NAME . ' capture payment error, order token: ' . $this->token . '. ' .
                 $immediatePaymentCaptureRequest->getResponse()->getParsedBody()->errorCode
             );
         }
@@ -395,7 +426,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         if (!$immediatePaymentCaptureRequest->getResponse()->isApproved()) {
             $this->paymentDeclined = true;
             throw new \Exception(
-                $this->l('Clearpay capture payment error, the payment was not procesed successfully')
+                self::PRODUCT_NAME . ' capture payment error, the payment was not processed successfully'
             );
         }
     }
@@ -407,12 +438,17 @@ class ClearpayNotifyModuleFrontController extends AbstractController
      */
     public function processMerchantOrder()
     {
+        if ($this->config['apiVersion'] === 'v1') {
+            $cpAmount = $this->clearpayOrder->totalAmount->amount;
+        } else {
+            $cpAmount = $this->clearpayOrder->amount->amount;
+        }
         try {
             $this->module->validateOrder(
                 $this->merchantCartId,
                 Configuration::get('PS_OS_PAYMENT'),
-                $this->clearpayOrder->totalAmount->amount,
-                $this->productName,
+                $cpAmount,
+                self::PRODUCT_NAME,
                 'clearpayOrderId: ' .  $this->clearpayCapturedPaymentId,
                 array('transaction_id' => $this->clearpayCapturedPaymentId),
                 null,
@@ -437,8 +473,8 @@ class ClearpayNotifyModuleFrontController extends AbstractController
             $this->saveLog($exception->getMessage(), 2);
         }
 
-        $message = 'Clearpay Order CONFIRMED' .
-            '. Clearpay OrderId=' .  $this->clearpayCapturedPaymentId .
+        $message = self::PRODUCT_NAME . ' Order CONFIRMED' .
+            '. ' . self::PRODUCT_NAME . ' OrderId=' .  $this->clearpayCapturedPaymentId .
             '. Prestashop OrderId=' . $this->module->currentOrder;
         $this->saveLog($message, 1);
     }
@@ -458,7 +494,8 @@ class ClearpayNotifyModuleFrontController extends AbstractController
                     ->setRequestBody(json_encode(array("merchantReference" => $this->module->currentOrder)));
                 $getOrderRequest->send();
                 if ($getOrderRequest->getResponse()->getHttpStatusCode() >= 400) {
-                    throw new \Exception("Unable to retrieve order from Clearpay = $this->clearpayOrderId");
+                    throw new \Exception('Unable to retrieve order from ' . self::PRODUCT_NAME .
+                        ' = ' . $this->clearpayOrderId);
                 }
 
                 $this->clearpayOrder = $getOrderRequest->getResponse()->getParsedBody();
@@ -476,11 +513,11 @@ class ClearpayNotifyModuleFrontController extends AbstractController
     public function rollbackMerchantOrder()
     {
         try {
-            $message = 'Clearpay Roolback method called: ' .
-                '. Clearpay OrderId=' . $this->clearpayOrderId .
+            $message = self::PRODUCT_NAME . ' Roolback method called: ' .
+                '. ' . self::PRODUCT_NAME . ' OrderId=' . $this->clearpayOrderId .
                 '. Prestashop CartId=' . $this->merchantCartId .
                 '. Prestashop OrderId=' . $this->merchantOrderId;
-            $this->saveLog($message, 3);
+            $this->saveLog($message, 2);
             if ($this->module->currentOrder) {
                 $objOrder = new Order($this->module->currentOrder);
                 $history = new OrderHistory();
@@ -488,25 +525,25 @@ class ClearpayNotifyModuleFrontController extends AbstractController
                 $history->changeIdOrderState(8, (int)($objOrder->id));
             }
         } catch (\Exception $exception) {
-            $this->saveLog('Error on Clearpay rollback Transaction: ' .
-                '. Clearpay OrderId=' . $this->clearpayOrderId .
+            $this->saveLog('Error on ' . self::PRODUCT_NAME . ' rollback Transaction: ' .
+                '. ' . self::PRODUCT_NAME . ' OrderId=' . $this->clearpayOrderId .
                 '. Prestashop CartId=' . $this->merchantCartId .
                 '. Prestashop OrderId=' . $this->merchantOrderId .
-                $exception->getMessage(), 3);
+                $exception->getMessage(), 2);
         }
     }
 
     /**
      * Lock the concurrency to prevent duplicated inputs
-     * @param $orderId
+     * @param $cartId
      *
      * @throws Exception
      */
-    protected function blockConcurrency($orderId)
+    protected function blockConcurrency($cartId)
     {
         try {
             $table = self::CART_TABLE;
-            Db::getInstance()->insert($table, array('id' =>(int)$orderId, 'timestamp' =>(time())));
+            Db::getInstance()->insert($table, array('id' =>(int)$cartId, 'timestamp' =>(time())));
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage());
         }

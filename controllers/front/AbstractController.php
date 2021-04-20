@@ -51,9 +51,11 @@ abstract class AbstractController extends ModuleFrontController
             if (is_array($message)) {
                 $message = json_encode($message);
             }
-            PrestaShopLogger::addLog($message, $severity, null, "Clearpay", 1);
+            if (Configuration::get('CLEARPAY_LOGS') == 'on' || $severity >= 3) {
+                PrestaShopLogger::addLog($message, $severity, null, "Clearpay", 1);
+            }
         } catch (\Exception $error) {
-            // Do nothing
+            PrestaShopLogger::addLog($error->getMessage(), $severity, null, "Clearpay", 2);
         }
     }
 }

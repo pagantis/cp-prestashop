@@ -42,19 +42,28 @@ abstract class AbstractPs17Selenium extends ClearpayPrestashopTest
      */
     public function uploadClearpay()
     {
-        $this->webDriver->executeScript('document.querySelector(\'.onboarding-button-shut-down\').click();');
-        sleep(10);
+        try {
+            $this->webDriver->executeScript('document.querySelector(\'.onboarding-button-shut-down\').click();');
+            sleep(4);
+        } catch (\Exception $exception) {
+//            do noting
+        }
         $elementSearch = WebDriverBy::partialLinkText('Modules');
         $condition = WebDriverExpectedCondition::elementToBeClickable($elementSearch);
         $this->waitUntil($condition);
         $this->assertTrue((bool) $condition);
         $this->findByLinkText('Modules')->click();
+        $elementSearch = WebDriverBy::partialLinkText('Module Manager');
+        $condition = WebDriverExpectedCondition::elementToBeClickable($elementSearch);
+        $this->waitUntil($condition);
+        $this->assertTrue((bool) $condition);
+        $this->findByLinkText('Module Manager')->click();
         $this->findById('page-header-desc-configuration-add_module')->click();
         $moduleInstallBlock = WebDriverBy::id('module_install');
         $fileInputSearch = $moduleInstallBlock->className('dz-hidden-input');
         $fileInput = $this->webDriver->findElement($fileInputSearch);
         $fileInput->setFileDetector(new LocalFileDetector());
-        $fileInput->sendKeys(__DIR__.'/../../clearpay.zip');
+        $fileInput->sendKeys(__DIR__.'/../../module.zip');
         $validatorSearch = WebDriverBy::className('module-import-success-msg');
         $condition = WebDriverExpectedCondition::visibilityOfElementLocated($validatorSearch);
         $this->webDriver->wait(90, 3000)->until($condition);
@@ -71,14 +80,26 @@ abstract class AbstractPs17Selenium extends ClearpayPrestashopTest
      */
     public function configureLanguagePack($language = '72', $languageName = 'Español (Spanish)')
     {
+        try {
+            $this->findByLinkText('Stop the OnBoarding')->click();
+            sleep(3);
+        } catch (\Exception $exception) {
+//            do noting
+        }
         $elementSearch = WebDriverBy::partialLinkText('International');
         $condition = WebDriverExpectedCondition::elementToBeClickable($elementSearch);
         $this->waitUntil($condition);
         $this->assertTrue((bool) $condition);
+        $menu = $this->findById('subtab-AdminInternational');
+        $this->moveToElementAndClick($menu->findElement(
+            WebDriverBy::partialLinkText('International')
+        ));
         $this->findByLinkText('International')->click();
-
-        // $languageInstallSelect = new WebDriverSelect($this->findById('iso_localization_pack'));
-        // $languageInstallSelect->selectByVisibleText($language);
+        $elementSearch = WebDriverBy::partialLinkText('Localization');
+        $condition = WebDriverExpectedCondition::elementToBeClickable($elementSearch);
+        $this->waitUntil($condition);
+        $this->assertTrue((bool) $condition);
+        $this->findByLinkText('Localization')->click();
 
         $this->findById('iso_localization_pack_chosen')->click();
         $this->findByCss('.chosen-results .active-result[data-option-array-index="'. $language .'"]')->click();

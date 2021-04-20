@@ -12,15 +12,20 @@ class BasicPs17Test extends AbstractPs17Selenium
     /**
      * Const title
      */
-    const TITLE = 'PrestaShop';
+    const PRODUCT_TITLE = 'Hummingbird printed t-shirt';
+
+    /**
+     * Const title
+     */
+    const ADMIN_TITLE = 'PrestaShop (PrestaShop™)';
 
     /**
      * @throws \Exception
      */
     public function testTitlePrestashop17()
     {
-        $this->webDriver->get(self::PS17URL);
-        $condition = WebDriverExpectedCondition::titleContains(self::TITLE);
+        $this->webDriver->get(self::PS17URL.'/men/1-1-hummingbird-printed-t-shirt.html#/1-size-s/8-color-white');
+        $condition = WebDriverExpectedCondition::titleContains(self::PRODUCT_TITLE);
         $this->webDriver->wait()->until($condition);
         $this->assertTrue((bool) $condition);
         $this->quit();
@@ -32,7 +37,7 @@ class BasicPs17Test extends AbstractPs17Selenium
     public function testBackOfficeTitlePrestashop17()
     {
         $this->webDriver->get(self::PS17URL.self::BACKOFFICE_FOLDER);
-        $condition = WebDriverExpectedCondition::titleContains(self::TITLE);
+        $condition = WebDriverExpectedCondition::titleContains(self::ADMIN_TITLE);
         $this->webDriver->wait()->until($condition);
         $this->assertTrue((bool) $condition);
         $this->quit();

@@ -1,7 +1,7 @@
 module.exports = function(grunt) {
     grunt.initConfig({
         shell: {
-            rename: {
+            generateZip: {
                 command:
                     'cp clearpay.zip clearpay-$(git rev-parse --abbrev-ref HEAD).zip \n'
             },
@@ -79,9 +79,8 @@ module.exports = function(grunt) {
         'shell:composerProd',
         'shell:autoindex',
         'compress',
-        'shell:rename',
+        'shell:generateZip',
         'shell:composerDev'
     ]);
-
     //manually run the selenium test: "grunt shell:testPrestashop16"
 };

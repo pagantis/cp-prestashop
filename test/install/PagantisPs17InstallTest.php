@@ -30,10 +30,9 @@ class ClearpayPs17InstallTest extends AbstractPs17Selenium
     public function configureClearpay()
     {
         $this->findByCss('#CLEARPAY_IS_ENABLED_on + label')->click();
-        $this->findById('CLEARPAY_PUBLIC_KEY')->clear()->sendKeys('tk_8517351ec6ae44b29f5dca6e');
-        $this->findById('clearpay_private_key')->clear()->sendKeys('c580df9e0b7b40c3');
-        $this->findByCss('#CLEARPAY_ENVIRONMENT_sandbox + label')->click();
-        $this->findById('module_form_submit_btn')->click();
+        $this->findById('CLEARPAY_PUBLIC_KEY')->clear()->sendKeys($this->configuration['publicKey']);
+        $this->findById('CLEARPAY_SECRET_KEY')->clear()->sendKeys($this->configuration['secretKey']);
+        $this->findById('configuration_form_submit_btn')->click();
         $confirmationSearch = WebDriverBy::className('module_confirmation');
         $condition = WebDriverExpectedCondition::textToBePresentInElement(
             $confirmationSearch,
