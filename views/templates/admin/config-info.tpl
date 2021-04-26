@@ -57,7 +57,7 @@
     <div class="panel clearpay-content-form">
         <h3><i class="icon icon-credit-card"></i> {$header|escape:'htmlall':'UTF-8'}</h3>
         <div class="column-left">
-            <a target="_blank" href="{l s='https://retailers.afterpay.com/uk/prestashop/?utm_source=prestashop&utm_medium=referral&utm_campaign=global_prestashop-lead-referrals_campaign_DEC-2020&utm_content=contact-us' mod='clearpay'}" class="btn btn-default" title="Login Clearpay"><i class="icon-user"></i> {$button1|escape:'htmlall':'UTF-8'}</a><br>
+            <a target="_blank" href="{l s='https://retailers.clearpay.co.uk/platform-partner/?utm_medium=plugin-b2b&utm_source=platform-partner-b2b&utm_campaign=gl-prestashop&utm_term=prestashop' mod='clearpay'}" class="btn btn-default" title="Login Clearpay"><i class="icon-user"></i> {$button1|escape:'htmlall':'UTF-8'}</a><br>
             <a target="_blank" href="{l s='https://developers.clearpay.com/docs/getting-started-with-clearpay-online' mod='clearpay'}" class="btn btn-default second" title="Getting Star"><i class="icon-user"></i> {$button2|escape:'htmlall':'UTF-8'}</a>
         </div>
         <div class="column-center">
