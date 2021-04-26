@@ -78,7 +78,7 @@ $_MODULE['<{clearpay}prestashop>clearpay_834771123e3b0f8abb1a27ae06a7f83e'] = 'N
 $_MODULE['<{clearpay}prestashop>notify_2b1563550dabe1eae8162bc16d8fd1a9'] = 'Impossible de récupérer la commande de';
 $_MODULE['<{clearpay}prestashop>payment_483cb038032a2aa03302d43b727c52af'] = '. Code d\'état:';
 $_MODULE['<{clearpay}prestashop>payment_9b4b36239f45f5e838e126b7d6f77cbe'] = 'Erreur reçue lors de la tentative de création d\'une commande:';
-$_MODULE['<{clearpay}prestashop>config-info_b3487ccef58efa1f9f510347f85210a2'] = 'https://www.clearpay.com/fr/prestashop/?utm_source=prestashop&utm_medium=referral&utm_campaign=global_prestashop-lead-referrals_campaign&utm_content=contact-us';
+$_MODULE['<{clearpay}prestashop>config-info_0525303f6a94d26db1d4d3250e4c36e0'] = 'https://www.clearpay.com/fr/prestashop/?utm_source=prestashop&utm_medium=referral&utm_campaign=global_prestashop-lead-referrals_campaign&utm_content=contact-us';
 $_MODULE['<{clearpay}prestashop>config-info_9d59871f213a2363b6fa87c96e20d6f8'] = 'https://developers.clearpay.com/docs/getting-started-with-clearpay-online';
 $_MODULE['<{clearpay}prestashop>payment-declined_cf63759a63d47726c82e95a896e169fa'] = 'PAIEMENT REFUSÉ';
 $_MODULE['<{clearpay}prestashop>payment-declined_8d6d05253cb3b81eb272a5a36769e5c2'] = 'https://developers.clearpay.com/docs/customer-support';

@@ -65,7 +65,6 @@ $_MODULE['<{clearpay}prestashop>clearpay_903e546441d302aa7ab1a8425b5ae03b'] = ' 
 $_MODULE['<{clearpay}prestashop>clearpay_361967d38d6dd34cc653ee337ec87b4a'] = ' haz click en el siguiente enlace para comenzar';
 $_MODULE['<{clearpay}prestashop>clearpay_1f1c6e7dcfe28bd070a91a587e3f9acb'] = ' con Clearpay';
 $_MODULE['<{clearpay}prestashop>clearpay_d3076b71ec8d810de3424e4faa089933'] = 'Respuesta inmediata - 4 pagos sin intereses de';
-$_MODULE['<{clearpay}prestashop>clearpay_f6af67905bf57e1665f2f20bafb55e2d'] = 'Serás redirigido a la plataforma de Clearpay para completar tu información de pago. Después, serás redirigido a nuestro sitio web para completar tu pedido. Ten en cuenta: Clearpay solo se puede utilizar como método de pago para pedidos con una dirección de envío y facturación dentro de España.';
 $_MODULE['<{clearpay}prestashop>clearpay_b3b5419fab79330bd4da100076bfc14c'] = 'SABER MÁS';
 $_MODULE['<{clearpay}prestashop>clearpay_ae5ab5fcf6628d51df510e3b6cf9d3d2'] = 'Compra ahora. Paga más tarde Sin intereses.';
 $_MODULE['<{clearpay}prestashop>clearpay_5a7c0d5e2088ae7ad7d82a9dd24ccbd8'] = 'Con Clearpay puedes disfrutar tu compra ahora y pagar en 4 cuotas, ';
@@ -78,7 +77,7 @@ $_MODULE['<{clearpay}prestashop>clearpay_834771123e3b0f8abb1a27ae06a7f83e'] = 'L
 $_MODULE['<{clearpay}prestashop>notify_2b1563550dabe1eae8162bc16d8fd1a9'] = 'Imposible recuperar la orden de ';
 $_MODULE['<{clearpay}prestashop>payment_483cb038032a2aa03302d43b727c52af'] = '. Código de estado:';
 $_MODULE['<{clearpay}prestashop>payment_9b4b36239f45f5e838e126b7d6f77cbe'] = 'Se ha producido un error al crear la orden:';
-$_MODULE['<{clearpay}prestashop>config-info_b3487ccef58efa1f9f510347f85210a2'] = 'https://www.clearpay.com/es/prestashop/?utm_source=prestashop&utm_medium=referral&utm_campaign=global_prestashop-lead-referrals_campaign&utm_content=contact-us';
+$_MODULE['<{clearpay}prestashop>config-info_0525303f6a94d26db1d4d3250e4c36e0'] = 'https://www.clearpay.com/es/prestashop/?utm_source=prestashop&utm_medium=referral&utm_campaign=global_prestashop-lead-referrals_campaign&utm_content=contact-us';
 $_MODULE['<{clearpay}prestashop>config-info_9d59871f213a2363b6fa87c96e20d6f8'] = 'https://developers.clearpay.com/docs/getting-started-with-clearpay-online';
 $_MODULE['<{clearpay}prestashop>payment-declined_cf63759a63d47726c82e95a896e169fa'] = 'PAGO RECHAZADO';
 $_MODULE['<{clearpay}prestashop>payment-declined_8d6d05253cb3b81eb272a5a36769e5c2'] = 'https://developers.clearpay.com/docs/customer-support';
