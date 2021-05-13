@@ -47,6 +47,7 @@ abstract class AbstractController extends ModuleFrontController
      */
     public function saveLog($message, $severity = 1)
     {
+        die($message);
         try {
             if (is_array($message)) {
                 $message = json_encode($message);

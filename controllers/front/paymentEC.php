@@ -13,9 +13,9 @@ use Afterpay\SDK\MerchantAccount as ClearpayMerchantAccount;
 require_once('AbstractController.php');
 
 /**
- * Class ClearpayRedirectModuleFrontController
+ * Class ClearpayPaymentECModuleFrontController
  */
-class ClearpayPaymentModuleFrontController extends AbstractController
+class ClearpayPaymentECModuleFrontController extends AbstractController
 {
     /** @var string $language */
     protected $language;
@@ -69,7 +69,12 @@ class ClearpayPaymentModuleFrontController extends AbstractController
         if (!empty($paymentObjData['shippingAddress']->id_state)) {
             $paymentObjData['shippingStateCode'] = $shippingStateObj->iso_code;
         }
-
+        $availableCarriers = $this->getAvailableCarriers();
+        foreach ($availableCarriers as $key => $availableCarrier) {
+            $availableCarriers[$key]['shipping_cost'] = $context->cart->getOrderShippingCost($key);
+        }
+        var_dump("<pre>", $availableCarriers);
+        die();
         $paymentObjData['billingAddress'] = new Address($paymentObjData['cart']->id_address_invoice);
         $paymentObjData['billingCountryCode'] = Country::getIsoById($paymentObjData['billingAddress']->id_country);
         $billingStateObj = new State($paymentObjData['billingAddress']->id_state);
@@ -183,6 +188,7 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                     $paymentObjData['currency']
                 )
                 ->setCourier(array(
+                    'shippedAt' => '',
                     'name' => $paymentObjData['carrier']->name . '',
                     'tracking' => '',
                     'priority' => 'STANDARD'
@@ -249,9 +255,11 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             if (isset($clearpayPaymentObj->getResponse()->getParsedBody()->message)) {
                 $errorMessage = $clearpayPaymentObj->getResponse()->getParsedBody()->message;
             }
-            $errorMessage .= '. Status code: ' . $clearpayPaymentObj->getResponse()->getHttpStatusCode();
+            $errorMessage .= $this->l('. Status code: ')
+                . $clearpayPaymentObj->getResponse()->getHttpStatusCode()
+            ;
             $this->saveLog(
-                'Error received when trying to create a order: ' .
+                $this->l('Error received when trying to create a order: ') .
                 $errorMessage . '. URL: ' . $clearpayPaymentObj->getApiEnvironmentUrl().$clearpayPaymentObj->getUri(),
                 2
             );
@@ -341,5 +349,54 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             }
         }
         return null;
+    }
+
+    private function getAvailableCarriers()
+    {
+        $sql = 'SELECT mc.`id_reference`
+			FROM `'._DB_PREFIX_.'module_carrier` mc
+			WHERE mc.`id_module` = '. $this->module->id;
+        $moduleCarriers = Db::getInstance()->ExecuteS($sql);
+        $returnCarriers = array();
+        $allCarriers = Carrier::getCarriers($this->context->language->id, true);
+
+        foreach ($moduleCarriers as $key => $reference) {
+            foreach ($allCarriers as $carrier) {
+                if ($carrier['id_carrier'] == $reference['id_reference']) {
+                    $returnCarriers[$reference['id_reference']] = $carrier;
+                }
+            }
+        }
+        return $returnCarriers;
+    }
+
+    private function makeRequest()
+    {
+        $options = array(
+            CURLOPT_RETURNTRANSFER => true,     // return web page
+            CURLOPT_HEADER         => false,    // don't return headers
+            CURLOPT_FOLLOWLOCATION => true,     // follow redirects
+            CURLOPT_ENCODING       => "",       // handle all encodings
+            CURLOPT_USERAGENT      => "Prestashop", // who am i
+            CURLOPT_AUTOREFERER    => true,     // set referer on redirect
+            CURLOPT_CONNECTTIMEOUT => 120,      // timeout on connect
+            CURLOPT_TIMEOUT        => 120,      // timeout on response
+            CURLOPT_MAXREDIRS      => 4,       // stop after 10 redirects
+            CURLOPT_SSL_VERIFYPEER => true     // Disabled SSL Cert checks
+        );
+
+        $url = 'https://api.eu-sandbox.afterpay.com/v2/checkouts';
+        $ch      = curl_init( $url );
+        curl_setopt_array( $ch, $options );
+        $content = curl_exec( $ch );
+        $err     = curl_errno( $ch );
+        $errmsg  = curl_error( $ch );
+        $header  = curl_getinfo( $ch );
+        curl_close( $ch );
+
+        $header['errno']   = $err;
+        $header['errmsg']  = $errmsg;
+        $header['content'] = $content;
+        return $header;
     }
 }

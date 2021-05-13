@@ -936,6 +936,13 @@ class Clearpay extends PaymentModule
                 __FILE__,
                 'views/templates/hook/' . $templateName
             );
+
+            $IsEcEnabled = true;
+            if ($IsEcEnabled) {
+                $uri = $this->context->link->getModuleLink('clearpay', 'paymentEC');
+                $return .= "<a href='$uri'>Express Checkout
+</a>";
+            }
         } else {
             if ($isEnabled && $templateName === 'product.tpl' && Configuration::get('AFTERPAY_LOGS') === 'on') {
                 $logMessage = '';
