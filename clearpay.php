@@ -358,7 +358,7 @@ class Clearpay extends PaymentModule
             $templateConfigs['MORE_INFO_TEXT'] = $this->l('More info');
             $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
-            $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
+            $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/logo/compact-badge-clearpay-black-on-mint.svg';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
             $mobileViewLayout = Tools::strtolower('four-by-one');
@@ -755,7 +755,7 @@ class Clearpay extends PaymentModule
             }
         }
 
-        $logo = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
+        $logo = 'https://static.afterpay.com/icon/clearpay-logo-colour-transparent.svg';
         $tpl = $this->local_path.'views/templates/admin/config-info.tpl';
         $header = $this->l('Clearpay Configuration Panel');
         $button1 = $this->l('Contact us');
@@ -825,7 +825,7 @@ class Clearpay extends PaymentModule
             $templateConfigs['MORE_INFO_TEXT'] = $this->l('More info');
             $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
-            $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
+            $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/logo/compact-badge-clearpay-black-on-mint.svg';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
             $mobileViewLayout = Tools::strtolower('four-by-one');
