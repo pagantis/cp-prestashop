@@ -61,6 +61,50 @@ class Clearpay extends PaymentModule
     );
 
     /**
+     * Default locale iso country codes per country
+     *
+     * @var array
+     */
+    public $defaultIsoCountryCodePerCountry = array(
+        'AU' => 'en_AU',
+        'CA' => 'en_CA',
+        'ES' => 'es_ES',
+        'GB' => 'en_GB',
+        'NZ' => 'en_NZ',
+        'US' => 'en_US',
+    );
+
+    /**
+     * allowed currency per region
+     *
+     * @var array
+     */
+    public $allowedCurrencyPerRegion = array(
+        'AU' => 'AUD',
+        'CA' => 'CAD',
+        'ES' => 'EUR',
+        'GB' => 'GBP',
+        'NZ' => 'NZD',
+        'US' => 'USD',
+    );
+
+
+
+    /**
+     * Default currency per region
+     *
+     * @var array
+     */
+    public $defaultLanguagePerCurrency = array(
+        'AUD' => 'AU',
+        'CAD' => 'CA',
+        'EUR' => 'ES',
+        'GBP' => 'GB',
+        'NZD' => 'NZ',
+        'USD' => 'US',
+    );
+
+    /**
      * Default API Version per region
      *
      * @var array
@@ -245,14 +289,13 @@ class Clearpay extends PaymentModule
         $publicKey = Configuration::get('CLEARPAY_PUBLIC_KEY');
         $secretKey = Configuration::get('CLEARPAY_SECRET_KEY');
 
-        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
-        $language = $this->getCurrentLanguage();
         $categoryRestriction = $this->isCartRestricted($this->context->cart);
+        $currencyRestriction = $this->isRestrictedByLangOrCurrency();
         return (
             $isEnabled &&
             $totalAmount >= $displayMinAmount &&
             $totalAmount <= $displayMaxAmount &&
-            in_array(Tools::strtoupper($language), $allowedCountries) &&
+            !$currencyRestriction &&
             !$categoryRestriction &&
             $publicKey &&
             $secretKey
@@ -281,20 +324,23 @@ class Clearpay extends PaymentModule
      */
     public function hookHeader($params)
     {
-        if (
-            Context::getContext()->controller->php_self === 'product' ||
-            Context::getContext()->controller->php_self === 'order'
-        ) {
-            echo '<!-- CPVersion:'. $this->version.
-                ' PS:'._PS_VERSION_.
-                ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
-                ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
-                ' Region:'.Configuration::get('CLEARPAY_REGION').
-                ' Lang:'.$this->getCurrentLanguage().
-                ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
-                ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
-                ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
-                ' -->';
+        if (Context::getContext()->controller->php_self === 'product') {
+            try {
+                echo '<!-- CPVersion:'. $this->version.
+                    ' PS:'._PS_VERSION_.
+                    ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
+                    ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
+                    ' Region:'.Configuration::get('CLEARPAY_REGION').
+                    ' Lang:'.$this->getCurrentLanguage().
+                    ' Currency:'.$this->currency.
+                    ' IsoCode:'.$this->getIsoCountryCode().
+                    ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
+                    ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
+                    ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
+                    ' -->';
+            } catch (\Exception $exception){
+                // Continue
+            }
         }
         if (_PS_VERSION_ >= "1.7") {
             $this->context->controller->registerJavascript(
@@ -336,18 +382,7 @@ class Clearpay extends PaymentModule
                 $checkoutText = $this->l('4 interest-free payments of') . ' ' . $amountWithCurrency;
             }
             $templateConfigs['TITLE'] = (string) $checkoutText;
-            $language = Language::getLanguage($this->context->language->id);
-            if (isset($language['locale'])) {
-                $language = $language['locale'];
-            } else {
-                $language = $language['language_code'];
-            }
-            $templateConfigs['ISO_COUNTRY_CODE'] = str_replace('-', '_', $language);
-            // Preserve Uppercase in locale
-            if (Tools::strlen($templateConfigs['ISO_COUNTRY_CODE']) == 5) {
-                $templateConfigs['ISO_COUNTRY_CODE'] = Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 0, 2) .
-                    Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 2, 4));
-            }
+            $templateConfigs['ISO_COUNTRY_CODE'] = $this->getIsoCountryCode();
             $templateConfigs['CURRENCY'] = $this->currency;
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
             $description = $this->l('You will be redirected to Clearpay to fill out your payment information.');
@@ -674,8 +709,7 @@ class Clearpay extends PaymentModule
         }
 
         // auto update configuration price thresholds and allowed countries in background
-        $language = $this->getCurrentLanguage();
-        if ($isEnabled && !empty($publicKey) && !empty($secretKey) && !empty($environment) && !empty($language)) {
+        if ($isEnabled && !empty($publicKey) && !empty($secretKey) && !empty($environment)) {
             try {
                 if (!empty($publicKey) && !empty($secretKey)  && $isEnabled) {
                     $merchantAccount = new Afterpay\SDK\MerchantAccount();
@@ -901,31 +935,21 @@ class Clearpay extends PaymentModule
 
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         $language = $this->getCurrentLanguage();
+        $restrictedByLangOrCurrency = $this->isRestrictedByLangOrCurrency();
         if ($isEnabled &&
             $simulatorIsEnabled &&
             $amount > 0 &&
             ($amount >= Configuration::get('CLEARPAY_MIN_AMOUNT') || $templateName === 'product.tpl') &&
             ($amount <= Configuration::get('CLEARPAY_MAX_AMOUNT')  || $templateName === 'product.tpl') &&
-            in_array(Tools::strtoupper($language), $allowedCountries) &&
-            !$categoryRestriction
+            !$categoryRestriction &&
+            !$restrictedByLangOrCurrency
         ) {
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
             $templateConfigs['SDK_URL'] = self::CLEARPAY_JS_CDN_URL;
             $templateConfigs['CLEARPAY_MIN_AMOUNT'] = Configuration::get('CLEARPAY_MIN_AMOUNT');
             $templateConfigs['CLEARPAY_MAX_AMOUNT'] = Configuration::get('CLEARPAY_MAX_AMOUNT');
             $templateConfigs['CURRENCY'] = $this->currency;
-            $language = Language::getLanguage($this->context->language->id);
-            if (isset($language['locale'])) {
-                $language = $language['locale'];
-            } else {
-                $language = $language['language_code'];
-            }
-            $templateConfigs['ISO_COUNTRY_CODE'] = str_replace('-', '_', $language);
-            // Preserve Uppercase in locale
-            if (Tools::strlen($templateConfigs['ISO_COUNTRY_CODE']) == 5) {
-                $templateConfigs['ISO_COUNTRY_CODE'] = Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 0, 2) .
-                    Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 2, 4));
-            }
+            $templateConfigs['ISO_COUNTRY_CODE'] = $this->getIsoCountryCode();
             $templateConfigs['AMOUNT_WITH_CURRENCY'] = $templateConfigs['AMOUNT'] . $this->currencySymbol;
             if ($this->currency === 'GBP') {
                 $templateConfigs['AMOUNT_WITH_CURRENCY'] = $this->currencySymbol. $templateConfigs['AMOUNT'];
@@ -1242,10 +1266,9 @@ class Clearpay extends PaymentModule
      */
     private function getCurrentLanguage()
     {
-        $language = 'EN';
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         if (is_null($allowedCountries)) {
-            return $language;
+            return 'NonValid';
         }
         $lang = Language::getLanguage($this->context->language->id);
         $langArray = explode("-", $lang['language_code']);
@@ -1254,24 +1277,11 @@ class Clearpay extends PaymentModule
         }
         $language = Tools::strtoupper($langArray[count($langArray)-1]);
 
-        // Prevent null language detection
-
         if (in_array(Tools::strtoupper($language), $allowedCountries)) {
             return $language;
         }
-        if ($this->shippingAddress) {
-            $language = Country::getIsoById($this->shippingAddress->id_country);
-            if (in_array(Tools::strtoupper($language), $allowedCountries)) {
-                return $language;
-            }
-        }
-        if ($this->billingAddress) {
-            $language = Country::getIsoById($this->billingAddress->id_country);
-            if (in_array(Tools::strtoupper($language), $allowedCountries)) {
-                return $language;
-            }
-        }
-        return $language;
+
+        return 'NonValid';
     }
 
     /**
@@ -1296,6 +1306,42 @@ class Clearpay extends PaymentModule
             return $this->defaultApiVersionPerRegion[$region];
         }
         return json_encode(array($region));
+    }
+
+    public function getIsoCountryCode() {
+        if (!isset($this->defaultLanguagePerCurrency[$this->currency])) {
+            return 'en_EU';
+        }
+        $language = $this->defaultLanguagePerCurrency[$this->currency];
+        if ($this->currency != 'EUR') {
+            return $this->defaultIsoCountryCodePerCountry[$language];
+        }
+
+        $languageCode = $this->getCurrentLanguage();
+        if ($languageCode == '') {
+            return 'en_EU';
+        }
+
+        $language = Language::getLanguage($languageCode);
+
+        if (isset($language['locale'])) {
+            $language = $language['locale'];
+        } else {
+            $language = $language['language_code'];
+        }
+        if (Tools::strlen($language) == 5) {
+            $part1 = Tools::substr($language, 0, 2);
+            $part2 = Tools::strtoupper(Tools::substr($language, 2, 4));
+            // Spanish dialects:
+            if ($part1 == 'ca' || $part1 == 'gl' || $part1 == 'eu') {
+                $part1 = 'es';
+            }
+            $language = $part1 .
+                $part2;
+        }
+        return str_replace('-', '_', $language);
+
+
     }
 
     /**
@@ -1324,6 +1370,15 @@ class Clearpay extends PaymentModule
         }
         $productCategories = Product::getProductCategories($productId);
         return (bool) count(array_intersect($productCategories, $clearpayRestrictedCategories));
+    }
+
+    private function isRestrictedByLangOrCurrency() {
+        $language = $this->getCurrentLanguage();
+        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
+        $return = (in_array(Tools::strtoupper($language), $allowedCountries) &&
+            $this->allowedCurrencyPerRegion[Configuration::get('CLEARPAY_REGION')] == $this->currency
+        );
+        return !$return;
     }
 
     /**
