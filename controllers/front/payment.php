@@ -35,6 +35,15 @@ class ClearpayPaymentModuleFrontController extends AbstractController
     );
 
     /**
+     * Default currency per region
+     *
+     * @var array
+     */
+    public $defaultLanguagePerCurrency = array(
+        'GBP' => 'GB',
+    );
+
+    /**
      * @param $region
      * @return string
      */
@@ -317,6 +326,11 @@ class ClearpayPaymentModuleFrontController extends AbstractController
      */
     private function getCountryCode($paymentObjData)
     {
+        // for uk currency
+        if (isset($this->defaultLanguagePerCurrency[$paymentObjData['currency']])) {
+            return $this->defaultLanguagePerCurrency[$paymentObjData['currency']];
+        }
+
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         $lang = Language::getLanguage($this->context->language->id);
         $langArray = explode("-", $lang['language_code']);
