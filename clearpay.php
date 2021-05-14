@@ -669,7 +669,6 @@ class Clearpay extends PaymentModule
      */
     public function getContent()
     {
-        $message = '';
         $settingsKeys = array();
         $settingsKeys[] = 'CLEARPAY_IS_ENABLED';
         $settingsKeys[] = 'CLEARPAY_PUBLIC_KEY';
@@ -1333,6 +1332,9 @@ class Clearpay extends PaymentModule
         return json_encode(array($region));
     }
 
+    /**
+     * @return mixed|string|string[]
+     */
     public function getIsoCountryCode() {
         if ($this->currency != 'EUR') {
             if (!isset($this->defaultLanguagePerCurrency[$this->currency])) {
@@ -1361,12 +1363,9 @@ class Clearpay extends PaymentModule
             if ($part1 == 'ca' || $part1 == 'gl' || $part1 == 'eu') {
                 $part1 = 'es';
             }
-            $language = $part1 .
-                $part2;
+            $language = $part1 . $part2;
         }
         return str_replace('-', '_', $language);
-
-
     }
 
     /**
@@ -1397,15 +1396,6 @@ class Clearpay extends PaymentModule
         return (bool) count(array_intersect($productCategories, $clearpayRestrictedCategories));
     }
 
-    private function isRestrictedByLangOrCurrency() {
-        $language = $this->getCurrentLanguageCode();
-        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
-        $return = (in_array(Tools::strtoupper($language), $allowedCountries) &&
-            $this->allowedCurrencyPerRegion[Configuration::get('CLEARPAY_REGION')] == $this->currency
-        );
-        return !$return;
-    }
-
     /**
      * @param $cart
      * @return bool
@@ -1419,4 +1409,17 @@ class Clearpay extends PaymentModule
         }
         return false;
     }
+
+    /**
+     * @return bool
+     */
+    private function isRestrictedByLangOrCurrency() {
+        $language = $this->getCurrentLanguageCode();
+        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
+        $return = (in_array(Tools::strtoupper($language), $allowedCountries) &&
+            $this->allowedCurrencyPerRegion[Configuration::get('CLEARPAY_REGION')] == $this->currency
+        );
+        return !$return;
+    }
+
 }
