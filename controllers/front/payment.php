@@ -224,7 +224,7 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             }
 
             $header = $this->module->name . '/' . $this->module->version
-                . ' (Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() . '; Merchant/' . $paymentObjData['publicKey']
+                . ' (Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() .'; Merchant/' . $paymentObjData['publicKey']
                 . ') ' . _PS_BASE_URL_SSL_.__PS_BASE_URI__;
             $clearpayPaymentObj->addHeader('User-Agent', $header);
             $clearpayPaymentObj->addHeader('Country', $paymentObjData['countryCode']);
