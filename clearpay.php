@@ -52,12 +52,12 @@ class Clearpay extends PaymentModule
      * @var array
      */
     public $defaultCountriesPerRegion = array(
-        'AU' => '["AU"]',
-        'CA' => '["CA"]',
+        'AU' => '["AU", "EN"]',
+        'CA' => '["CA", "EN"]',
         'ES' => '["ES", "IT", "FR"]',
-        'GB' => '["GB"]',
-        'NZ' => '["NZ"]',
-        'US' => '["US"]',
+        'GB' => '["GB", "EN"]',
+        'NZ' => '["NZ", "EN"]',
+        'US' => '["US", "EN"]',
     );
 
     /**
@@ -98,7 +98,6 @@ class Clearpay extends PaymentModule
     public $defaultLanguagePerCurrency = array(
         'AUD' => 'AU',
         'CAD' => 'CA',
-        'EUR' => 'ES',
         'GBP' => 'GB',
         'NZD' => 'NZ',
         'USD' => 'US',
@@ -331,7 +330,7 @@ class Clearpay extends PaymentModule
                     ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
                     ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
                     ' Region:'.Configuration::get('CLEARPAY_REGION').
-                    ' Lang:'.$this->getCurrentLanguage().
+                    ' Lang:'.$this->getCurrentLanguageCode().
                     ' Currency:'.$this->currency.
                     ' IsoCode:'.$this->getIsoCountryCode().
                     ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
@@ -934,7 +933,7 @@ class Clearpay extends PaymentModule
         $isEnabled = Configuration::get('CLEARPAY_IS_ENABLED');
 
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
-        $language = $this->getCurrentLanguage();
+        $language = $this->getCurrentLanguageCode();
         $restrictedByLangOrCurrency = $this->isRestrictedByLangOrCurrency();
         if ($isEnabled &&
             $simulatorIsEnabled &&
@@ -1262,13 +1261,16 @@ class Clearpay extends PaymentModule
     }
 
     /**
-     * Get user language
+     * Get user language Code
      */
-    private function getCurrentLanguage()
+    private function getCurrentLanguageCode()
     {
+        if ($this->currency != 'EUR') {
+            return 'EN';
+        }
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         if (is_null($allowedCountries)) {
-            return 'NonValid';
+            return 'NonAccepted';
         }
         $lang = Language::getLanguage($this->context->language->id);
         $langArray = explode("-", $lang['language_code']);
@@ -1281,7 +1283,30 @@ class Clearpay extends PaymentModule
             return $language;
         }
 
-        return 'NonValid';
+        return 'NonAccepted('.$lang['language_code'].')';
+    }
+
+    /**
+     * Get user language Id
+     */
+    private function getCurrentLanguageId()
+    {
+        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
+        if (is_null($allowedCountries)) {
+            return '-1';
+        }
+        $lang = Language::getLanguage($this->context->language->id);
+        $langArray = explode("-", $lang['language_code']);
+        if (count($langArray) != 2 && isset($lang['locale'])) {
+            $langArray = explode("-", $lang['locale']);
+        }
+        $language = Tools::strtoupper($langArray[count($langArray)-1]);
+
+        if (in_array(Tools::strtoupper($language), $allowedCountries)) {
+            return $this->context->language->id;
+        }
+
+        return '-1';
     }
 
     /**
@@ -1309,20 +1334,20 @@ class Clearpay extends PaymentModule
     }
 
     public function getIsoCountryCode() {
-        if (!isset($this->defaultLanguagePerCurrency[$this->currency])) {
-            return 'en_EU';
-        }
-        $language = $this->defaultLanguagePerCurrency[$this->currency];
         if ($this->currency != 'EUR') {
+            if (!isset($this->defaultLanguagePerCurrency[$this->currency])) {
+                return 'NonAccepted';
+            }
+            $language = $this->defaultLanguagePerCurrency[$this->currency];
             return $this->defaultIsoCountryCodePerCountry[$language];
         }
 
-        $languageCode = $this->getCurrentLanguage();
-        if ($languageCode == '') {
-            return 'en_EU';
+        $languageId = $this->getCurrentLanguageId();
+        if ($languageId == -1) {
+            return 'NonAccepted';
         }
 
-        $language = Language::getLanguage($languageCode);
+        $language = Language::getLanguage($languageId);
 
         if (isset($language['locale'])) {
             $language = $language['locale'];
@@ -1373,7 +1398,7 @@ class Clearpay extends PaymentModule
     }
 
     private function isRestrictedByLangOrCurrency() {
-        $language = $this->getCurrentLanguage();
+        $language = $this->getCurrentLanguageCode();
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         $return = (in_array(Tools::strtoupper($language), $allowedCountries) &&
             $this->allowedCurrencyPerRegion[Configuration::get('CLEARPAY_REGION')] == $this->currency
