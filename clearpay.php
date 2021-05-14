@@ -88,8 +88,6 @@ class Clearpay extends PaymentModule
         'US' => 'USD',
     );
 
-
-
     /**
      * Default currency per region
      *
@@ -121,6 +119,7 @@ class Clearpay extends PaymentModule
      * @var null $shippingAddress
      */
     protected $shippingAddress = null;
+
     /**
      * @var null $billingAddress
      */
@@ -142,7 +141,7 @@ class Clearpay extends PaymentModule
     {
         $this->name = 'clearpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.1';
+        $this->version = '1.1.2';
         $this->author = $this->l('Clearpay');
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
@@ -1265,9 +1264,6 @@ class Clearpay extends PaymentModule
      */
     private function getCurrentLanguageCode()
     {
-        if ($this->currency != 'EUR') {
-            return 'EN';
-        }
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         if (is_null($allowedCountries)) {
             return 'NonAccepted';
@@ -1278,6 +1274,10 @@ class Clearpay extends PaymentModule
             $langArray = explode("-", $lang['locale']);
         }
         $language = Tools::strtoupper($langArray[count($langArray)-1]);
+
+        if ($this->currency != 'EUR' && in_array(Tools::strtoupper($langArray[0]), $allowedCountries)) {
+            return Tools::strtoupper($langArray[0]);
+        }
 
         if (in_array(Tools::strtoupper($language), $allowedCountries)) {
             return $language;
