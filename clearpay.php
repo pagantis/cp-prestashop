@@ -322,6 +322,12 @@ class Clearpay extends PaymentModule
      */
     public function hookHeader($params)
     {
+        if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
+            $template = $this->hookDisplayWrapperTop();
+            if (!empty($template)) {
+                echo($template);
+            }
+        }
         if (Context::getContext()->controller->php_self === 'product') {
             try {
                 echo '<!-- CPVersion:'. $this->version.
