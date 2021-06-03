@@ -346,14 +346,16 @@ class Clearpay extends PaymentModule
                 // Continue
             }
         }
-        if (_PS_VERSION_ >= "1.7") {
-            $this->context->controller->registerJavascript(
-                sha1(mt_rand(1, 90000)),
-                self::CLEARPAY_JS_CDN_URL,
-                array('server' => 'remote')
-            );
-        } else {
-            $this->context->controller->addJS(self::CLEARPAY_JS_CDN_URL);
+        if (Context::getContext()->controller->php_self === 'order') {
+            if (_PS_VERSION_ >= "1.7") {
+                $this->context->controller->registerJavascript(
+                    sha1(mt_rand(1, 90000)),
+                    self::CLEARPAY_JS_CDN_URL,
+                    array('server' => 'remote')
+                );
+            } else {
+                $this->context->controller->addJS(self::CLEARPAY_JS_CDN_URL);
+            }
         }
     }
 
@@ -963,7 +965,7 @@ class Clearpay extends PaymentModule
                 'views/templates/hook/' . $templateName
             );
         } else {
-            if ($isEnabled && $templateName === 'product.tpl' && Configuration::get('AFTERPAY_LOGS') === 'on') {
+            if ($isEnabled && $templateName === 'product.tpl' && Configuration::get('CLEARPAY_LOGS') === 'on') {
                 $logMessage = '';
                 if (!$simulatorIsEnabled) {
                     $logMessage .= "Clearpay: Simulator is disabled by 'self::SIMULATOR_IS_ENABLED'. ";
