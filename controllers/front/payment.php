@@ -54,8 +54,14 @@ class ClearpayPaymentModuleFrontController extends AbstractController
      */
     public function postProcess()
     {
-        $paymentObjData = array();
         $context = Context::getContext();
+        $cartUrl = $context->link->getPageLink(
+            'cart',
+            null,
+            null,
+            array('action' => 'show')
+        );
+        $paymentObjData = array();
         $paymentObjData['currency'] = $context->currency->iso_code;
         $paymentObjData['region'] = Configuration::get('CLEARPAY_REGION');
 
@@ -132,7 +138,8 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                 ->setMerchant(array(
                     'redirectConfirmUrl' => $paymentObjData['okUrl'],
                     'redirectCancelUrl' => $paymentObjData['cancelUrl']
-                ))
+                ));
+            $clearpayPaymentObj
                 ->setMerchantAccount($clearpayMerchantAccount)
                 ->setAmount(
                     Clearpay::parseAmount($paymentObjData['cart']->getOrderTotal(true, Cart::BOTH)),
@@ -221,7 +228,6 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             } else {
                 $clearpayPaymentObj = $this->addPaymentV2Options($clearpayPaymentObj, $paymentObjData);
             }
-
             $header = $this->module->name . '/' . $this->module->version
                 . ' (Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() . '; Merchant/' . $paymentObjData['publicKey']
                 . ') ' . _PS_BASE_URL_SSL_.__PS_BASE_URI__;
@@ -250,9 +256,10 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                 $errorMessage = $clearpayPaymentObj->getResponse()->getParsedBody()->message;
             }
             $errorMessage .= '. Status code: ' . $clearpayPaymentObj->getResponse()->getHttpStatusCode();
+            $logMessage = 'Error received when trying to create a order: ' .
+                $errorMessage . '. URL: ' . $clearpayPaymentObj->getApiEnvironmentUrl().$clearpayPaymentObj->getUri();
             $this->saveLog(
-                'Error received when trying to create a order: ' .
-                $errorMessage . '. URL: ' . $clearpayPaymentObj->getApiEnvironmentUrl().$clearpayPaymentObj->getUri(),
+                $logMessage,
                 2
             );
 
@@ -339,6 +346,9 @@ class ClearpayPaymentModuleFrontController extends AbstractController
             if (in_array(Tools::strtoupper($language), $allowedCountries)) {
                 return $language;
             }
+        }
+        if ($language == 'US' || $language == 'EN') {
+            return "GB";
         }
         return null;
     }
