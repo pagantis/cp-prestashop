@@ -117,7 +117,7 @@
                                 console.log("success", ajax_data);
                                 if (ajax_data.success === true) {
                                     jQuery('.btn-afterpay_express').prop('disabled', false);
-                                    // window.location.href = ajax_data.url;
+                                    window.location.href = ajax_data.url;
                                     if (spinner) {
                                         spinner.overlay.remove();
                                         spinner.css.remove();

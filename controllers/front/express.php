@@ -398,6 +398,7 @@ class ClearpayExpressModuleFrontController extends AbstractController
      */
     private function captureClearpayOrder ()
     {
+
         // Validations
         try {
             $this->prepareVariables();
@@ -416,6 +417,7 @@ class ClearpayExpressModuleFrontController extends AbstractController
             $this->validateAmount();
             $this->checkMerchantOrderStatus();
         } catch (\Exception $exception) {
+            $this->saveLog($exception->getMessage(), 3);
             header('Content-type: application/json; charset=utf-8');
             echo json_encode(array(
                 'success'  => false,
@@ -427,9 +429,9 @@ class ClearpayExpressModuleFrontController extends AbstractController
 
         // Process Clearpay Order
         try {
-            //$this->captureClearpayPayment();
-            $this->clearpayCapturedPaymentId = "55443322";
+            $this->captureClearpayPayment();
         } catch (\Exception $exception) {
+            $this->saveLog($exception->getMessage(), 3);
             header('Content-type: application/json; charset=utf-8');
             echo json_encode(array(
                 'success'  => false,
@@ -440,9 +442,10 @@ class ClearpayExpressModuleFrontController extends AbstractController
         }
 
         // Process Merchant Order
-        $this->processMerchantOrder();
         try {
+            $this->processMerchantOrder();
         } catch (\Exception $exception) {
+            $this->saveLog($exception->getMessage(), 3);
             $this->rollbackMerchantOrder();
             header('Content-type: application/json; charset=utf-8');
             echo json_encode(array(
@@ -557,17 +560,13 @@ class ClearpayExpressModuleFrontController extends AbstractController
      */
     public function getMerchantCart()
     {
-        try {
-            $this->merchantCart = new Cart($this->merchantCartId);
-            if (!Validate::isLoadedObject($this->merchantCart)) {
-                // This exception is only for Prestashop
-                throw new \Exception('Unable to load cart');
-            }
-            if ($this->merchantCart->secure_key != $this->config['secureKey']) {
-                throw new \Exception('Secure Key is not valid');
-            }
-        } catch (\Exception $exception) {
-            throw new \Exception('Unable to find cart with id' . $this->merchantCartId);
+        $this->merchantCart = new Cart($this->merchantCartId);
+        if (!Validate::isLoadedObject($this->merchantCart)) {
+            // This exception is only for Prestashop
+            throw new \Exception('Unable to load cart with id' . $this->merchantCartId);
+        }
+        if ($this->merchantCart->secure_key != $this->config['secureKey']) {
+            throw new \Exception('Secure Key is not valid');
         }
     }
 
@@ -636,25 +635,25 @@ class ClearpayExpressModuleFrontController extends AbstractController
         } else {
             $cpAmount = $this->clearpayOrder->amount->amount;
         }
-        $totalAmount = (string) $cpAmount;
-        $merchantAmount = (string) ($this->merchantCart->getOrderTotal(true, Cart::BOTH));
-        if ($totalAmount != $merchantAmount) {
-            $numberClearpayAmount = (integer) (100 * $cpAmount);
-            $ClearpayShippingOption = $this->getShippingMethods($this->clearpayOrder->shippingOptionIdentifier);
-            $numberMerchantAmount = (integer) (100 * $this->merchantCart->getOrderTotal(true, Cart::BOTH)) +
-                (integer) (100 * $ClearpayShippingOption['shippingAmount']['amount']);
-            $amountDff =  $numberMerchantAmount - $numberClearpayAmount;
-            if (abs($amountDff) > self::MISMATCH_AMOUNT_THRESHOLD) {
-                $this->mismatchError = true;
-                $amountMismatchError = 'Amount mismatch in PrestaShop Cart #'. $this->merchantCartId .
-                    ' compared with ' . self::PRODUCT_NAME . ' Order: ' . $this->clearpayOrderId .
-                    '. The Cart in PrestaShop has an amount of: ' . $merchantAmount . ' and in ' . self::PRODUCT_NAME .
-                    ' of: ' . $totalAmount;
 
-                $this->saveLog($amountMismatchError, 3);
-                throw new \Exception($amountMismatchError);
-            }
+        $numberClearpayAmount = (integer) (100 * $cpAmount);
+        $ClearpayShippingOption = $this->getShippingMethods($this->clearpayOrder->shippingOptionIdentifier);
+        $numberMerchantAmount = (integer) (100 * $this->merchantCart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING)) +
+            (integer) (100 * $ClearpayShippingOption['shippingAmount']['amount']);
+        $merchantAmount = (string)($numberMerchantAmount/100);
+        $amountDff =  $numberMerchantAmount - $numberClearpayAmount;
+
+        if (abs($amountDff) > self::MISMATCH_AMOUNT_THRESHOLD) {
+            $this->mismatchError = true;
+            $amountMismatchError = 'Amount mismatch in PrestaShop Cart #'. $this->merchantCartId .
+                ' compared with ' . self::PRODUCT_NAME . ' Order: ' . $this->clearpayOrderId .
+                '. The Cart in PrestaShop has an amount of: ' . $merchantAmount . ' and in ' . self::PRODUCT_NAME .
+                ' of: ' . (string) $cpAmount;
+
+            $this->saveLog($amountMismatchError, 3);
+            throw new \Exception($amountMismatchError);
         }
+
     }
 
     /**
@@ -806,7 +805,6 @@ class ClearpayExpressModuleFrontController extends AbstractController
         $delivery_option[$this->merchantCart->id_address_delivery] =
             (string)$this->clearpayOrder->shippingOptionIdentifier.',';
         $this->merchantCart->setDeliveryOption($delivery_option);
-        //var_dump("<pre>", $delivery_option);die;
         $this->merchantCart->save();
 
         $validateOrder = $this->module->validateOrder(
@@ -815,7 +813,9 @@ class ClearpayExpressModuleFrontController extends AbstractController
             $cpAmount,
             self::PRODUCT_NAME,
             'clearpayOrderId: ' .  $this->clearpayCapturedPaymentId,
-            array('transaction_id' => $this->clearpayCapturedPaymentId),
+            array('transaction_id' => $this->clearpayCapturedPaymentId,
+                'ClearpayAmount' => $cpAmount,
+                "ShippingMethod" => $this->clearpayOrder->shippingOptionIdentifier),
             null,
             false,
             $this->config['secureKey']
@@ -833,7 +833,7 @@ class ClearpayExpressModuleFrontController extends AbstractController
         $shippingTotalAmount = 0;
         $shippingMethod = $this->getShippingMethods($this->clearpayOrder->shippingOptionIdentifier);
         if (!empty($shippingMethod)) {
-            $shippingTotalAmount = $shippingMethod->shippingAmount->amount;
+            $shippingTotalAmount = $shippingMethod['shippingAmount']['amount'];
         }
         $order->total_shipping = $shippingTotalAmount;
         $order->total_shipping_tax_incl = $shippingTotalAmount;
