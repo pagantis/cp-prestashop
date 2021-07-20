@@ -52,12 +52,53 @@ class Clearpay extends PaymentModule
      * @var array
      */
     public $defaultCountriesPerRegion = array(
-        'AU' => '["AU"]',
-        'CA' => '["CA"]',
+        'AU' => '["AU", "EN"]',
+        'CA' => '["CA", "EN"]',
         'ES' => '["ES", "IT", "FR"]',
-        'GB' => '["GB"]',
-        'NZ' => '["NZ"]',
-        'US' => '["US"]',
+        'GB' => '["GB", "EN"]',
+        'NZ' => '["NZ", "EN"]',
+        'US' => '["US", "EN"]',
+    );
+
+    /**
+     * Default locale iso country codes per country
+     *
+     * @var array
+     */
+    public $defaultIsoCountryCodePerCountry = array(
+        'AU' => 'en_AU',
+        'CA' => 'en_CA',
+        'ES' => 'es_ES',
+        'GB' => 'en_GB',
+        'NZ' => 'en_NZ',
+        'US' => 'en_US',
+    );
+
+    /**
+     * allowed currency per region
+     *
+     * @var array
+     */
+    public $allowedCurrencyPerRegion = array(
+        'AU' => 'AUD',
+        'CA' => 'CAD',
+        'ES' => 'EUR',
+        'GB' => 'GBP',
+        'NZ' => 'NZD',
+        'US' => 'USD',
+    );
+
+    /**
+     * Default currency per region
+     *
+     * @var array
+     */
+    public $defaultLanguagePerCurrency = array(
+        'AUD' => 'AU',
+        'CAD' => 'CA',
+        'GBP' => 'GB',
+        'NZD' => 'NZ',
+        'USD' => 'US',
     );
 
     /**
@@ -78,6 +119,7 @@ class Clearpay extends PaymentModule
      * @var null $shippingAddress
      */
     protected $shippingAddress = null;
+
     /**
      * @var null $billingAddress
      */
@@ -247,14 +289,13 @@ class Clearpay extends PaymentModule
         $publicKey = Configuration::get('CLEARPAY_PUBLIC_KEY');
         $secretKey = Configuration::get('CLEARPAY_SECRET_KEY');
 
-        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
-        $language = $this->getCurrentLanguage();
         $categoryRestriction = $this->isCartRestricted($this->context->cart);
+        $currencyRestriction = $this->isRestrictedByLangOrCurrency();
         return (
             $isEnabled &&
             $totalAmount >= $displayMinAmount &&
             $totalAmount <= $displayMaxAmount &&
-            in_array(Tools::strtoupper($language), $allowedCountries) &&
+            !$currencyRestriction &&
             !$categoryRestriction &&
             $publicKey &&
             $secretKey
@@ -283,31 +324,40 @@ class Clearpay extends PaymentModule
      */
     public function hookHeader($params)
     {
-        if (
-            Context::getContext()->controller->php_self === 'product' ||
-            Context::getContext()->controller->php_self === 'order'
-        ) {
-            echo '<!-- CPVersion:'. $this->version.
-                ' PS:'._PS_VERSION_.
-                ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
-                ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
-                ' Region:'.Configuration::get('CLEARPAY_REGION').
-                ' Lang:'.$this->getCurrentLanguage().
-                ' EC Enabled:'.Configuration::get('CLEARPAY_IS_EC_ENABLED').
-                ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
-                ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
-                ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
-                ' -->';
+        if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
+            $template = $this->hookDisplayWrapperTop();
+            if (!empty($template)) {
+                echo($template);
+            }
         }
-        if (_PS_VERSION_ >= "1.7") {
-            $this->context->controller->registerJavascript(
-                sha1(mt_rand(1, 90000)),
-                self::CLEARPAY_JS_CDN_URL,
-                array('server' => 'remote')
-            );
-
-        } else {
-            $this->context->controller->addJS(self::CLEARPAY_JS_CDN_URL);
+        if (Context::getContext()->controller->php_self === 'product') {
+            try {
+                echo '<!-- CPVersion:'. $this->version.
+                    ' PS:'._PS_VERSION_.
+                    ' Env:'.Configuration::get('CLEARPAY_ENVIRONMENT').
+                    ' MId:'.Configuration::get('CLEARPAY_PUBLIC_KEY').
+                    ' Region:'.Configuration::get('CLEARPAY_REGION').
+                    ' Lang:'.$this->getCurrentLanguageCode().
+                    ' Currency:'.$this->currency.
+                    ' IsoCode:'.$this->getIsoCountryCode().
+                    ' Enabled:'.Configuration::get('CLEARPAY_IS_ENABLED').
+                    ' A_Countries:'.Configuration::get('CLEARPAY_ALLOWED_COUNTRIES').
+                    ' R_Cat:'.(string)Configuration::get('CLEARPAY_RESTRICTED_CATEGORIES').
+                    ' -->';
+            } catch (\Exception $exception) {
+                // Continue
+            }
+        }
+        if (Context::getContext()->controller->php_self === 'order') {
+            if (_PS_VERSION_ >= "1.7") {
+                $this->context->controller->registerJavascript(
+                    sha1(mt_rand(1, 90000)),
+                    self::CLEARPAY_JS_CDN_URL,
+                    array('server' => 'remote')
+                );
+            } else {
+                $this->context->controller->addJS(self::CLEARPAY_JS_CDN_URL);
+            }
         }
     }
 
@@ -339,18 +389,7 @@ class Clearpay extends PaymentModule
                 $checkoutText = $this->l('4 interest-free payments of') . ' ' . $amountWithCurrency;
             }
             $templateConfigs['TITLE'] = (string) $checkoutText;
-            $language = Language::getLanguage($this->context->language->id);
-            if (isset($language['locale'])) {
-                $language = $language['locale'];
-            } else {
-                $language = $language['language_code'];
-            }
-            $templateConfigs['ISO_COUNTRY_CODE'] = str_replace('-', '_', $language);
-            // Preserve Uppercase in locale
-            if (Tools::strlen($templateConfigs['ISO_COUNTRY_CODE']) == 5) {
-                $templateConfigs['ISO_COUNTRY_CODE'] = Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 0, 2) .
-                    Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 2, 4));
-            }
+            $templateConfigs['ISO_COUNTRY_CODE'] = $this->getIsoCountryCode();
             $templateConfigs['CURRENCY'] = $this->currency;
             $templateConfigs['TOTAL_AMOUNT'] = $totalAmount;
             $description = $this->l('You will be redirected to Clearpay to fill out your payment information.');
@@ -361,12 +400,12 @@ class Clearpay extends PaymentModule
             $templateConfigs['MORE_INFO_TEXT'] = $this->l('More info');
             $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
-            $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
+            $templateConfigs['LOGO_BADGE'] ='https://static.afterpay.com/logo/compact-badge-clearpay-black-on-mint.svg';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
             $mobileViewLayout = Tools::strtolower('four-by-one');
             $isMobileLayout = $this->context->isMobile();
-            if ($this->context->isMobile()){
+            if ($isMobileLayout) {
                 $mobileViewLayout = Tools::strtolower('two-by-two');
             }
             $templateConfigs['AP_MOBILE_LAYOUT'] = $mobileViewLayout;
@@ -660,7 +699,6 @@ class Clearpay extends PaymentModule
      */
     public function getContent()
     {
-        $message = '';
         $settingsKeys = array();
         $settingsKeys[] = 'CLEARPAY_IS_ENABLED';
         $settingsKeys[] = 'CLEARPAY_IS_EC_ENABLED';
@@ -699,8 +737,7 @@ class Clearpay extends PaymentModule
         }
 
         // auto update configuration price thresholds and allowed countries in background
-        $language = $this->getCurrentLanguage();
-        if ($isEnabled && !empty($publicKey) && !empty($secretKey) && !empty($environment) && !empty($language)) {
+        if ($isEnabled && !empty($publicKey) && !empty($secretKey) && !empty($environment)) {
             try {
                 if (!empty($publicKey) && !empty($secretKey)  && $isEnabled) {
                     $merchantAccount = new Afterpay\SDK\MerchantAccount();
@@ -780,7 +817,7 @@ class Clearpay extends PaymentModule
             }
         }
 
-        $logo = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
+        $logo = 'https://static.afterpay.com/icon/clearpay-logo-colour-transparent.svg';
         $tpl = $this->local_path.'views/templates/admin/config-info.tpl';
         $header = $this->l('Clearpay Configuration Panel');
         $button1 = $this->l('Contact us');
@@ -850,12 +887,12 @@ class Clearpay extends PaymentModule
             $templateConfigs['MORE_INFO_TEXT'] = $this->l('More info');
             $templateConfigs['LOGO_TEXT'] = $this->l("Clearpay");
             $templateConfigs['ICON'] = 'https://static.afterpay.com/app/icon-128x128.png';
-            $templateConfigs['LOGO_BADGE'] = 'https://static.afterpay.com/email/logo-clearpay-colour.png';
+            $templateConfigs['LOGO_BADGE'] ='https://static.afterpay.com/logo/compact-badge-clearpay-black-on-mint.svg';
             $templateConfigs['LOGO_OPC'] = Media::getMediaPath(_PS_MODULE_DIR_.$this->name.'/views/img/logo_opc.png');
             $templateConfigs['PAYMENT_URL'] = $link->getModuleLink('clearpay', 'payment');
             $mobileViewLayout = Tools::strtolower('four-by-one');
             $isMobileLayout = $this->context->isMobile();
-            if ($this->context->isMobile()){
+            if ($isMobileLayout) {
                 $mobileViewLayout = Tools::strtolower('two-by-two');
             }
             $templateConfigs['AP_MOBILE_LAYOUT'] = $mobileViewLayout;
@@ -926,14 +963,15 @@ class Clearpay extends PaymentModule
         $return = '';
         $isEnabled = Configuration::get('CLEARPAY_IS_ENABLED');
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
-        $language = $this->getCurrentLanguage();
+        $language = $this->getCurrentLanguageCode();
+        $restrictedByLangOrCurrency = $this->isRestrictedByLangOrCurrency();
         if ($isEnabled &&
             $simulatorIsEnabled &&
             $amount > 0 &&
             ($amount >= Configuration::get('CLEARPAY_MIN_AMOUNT') || $templateName === 'product.tpl') &&
             ($amount <= Configuration::get('CLEARPAY_MAX_AMOUNT')  || $templateName === 'product.tpl') &&
-            in_array(Tools::strtoupper($language), $allowedCountries) &&
-            !$categoryRestriction
+            !$categoryRestriction &&
+            !$restrictedByLangOrCurrency
         ) {
             $templateConfigs['PS_VERSION'] = str_replace('.', '-', Tools::substr(_PS_VERSION_, 0, 3));
             $templateConfigs['SDK_URL'] = self::CLEARPAY_JS_CDN_URL;
@@ -984,7 +1022,7 @@ class Clearpay extends PaymentModule
                 );
             }
         } else {
-            if ($isEnabled && $templateName === 'product.tpl' && Configuration::get('AFTERPAY_LOGS') === 'on') {
+            if ($isEnabled && $templateName === 'product.tpl' && Configuration::get('CLEARPAY_LOGS') === 'on') {
                 $logMessage = '';
                 if (!$simulatorIsEnabled) {
                     $logMessage .= "Clearpay: Simulator is disabled by 'self::SIMULATOR_IS_ENABLED'. ";
@@ -1137,14 +1175,13 @@ class Clearpay extends PaymentModule
      */
     public function hookActionOrderStatusUpdate($params)
     {
-        if (empty($order) || empty($order->payment) || $order->payment != self::PRODUCT_PAYMENT_NAME) {
-            return false;
-        }
-
         $newOrderStatus = null;
         $order = null;
         if (!empty($params) && !empty($params['id_order'])) {
             $order = new Order((int)$params['id_order']);
+        }
+        if (empty($order) || empty($order->payment) || $order->payment != self::PRODUCT_PAYMENT_NAME) {
+            return false;
         }
 
         if (!empty($params) && !empty($params['newOrderStatus'])) {
@@ -1285,14 +1322,13 @@ class Clearpay extends PaymentModule
     }
 
     /**
-     * Get user language
+     * Get user language Code
      */
-    private function getCurrentLanguage()
+    private function getCurrentLanguageCode()
     {
-        $language = 'EN';
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         if (is_null($allowedCountries)) {
-            return $language;
+            return 'NonAccepted';
         }
         $lang = Language::getLanguage($this->context->language->id);
         $langArray = explode("-", $lang['language_code']);
@@ -1301,27 +1337,42 @@ class Clearpay extends PaymentModule
         }
         $language = Tools::strtoupper($langArray[count($langArray)-1]);
 
-        // Prevent null language detection
+        if ($this->currency != 'EUR' && in_array(Tools::strtoupper($langArray[0]), $allowedCountries)) {
+            return Tools::strtoupper($langArray[0]);
+        }
 
         if (in_array(Tools::strtoupper($language), $allowedCountries)) {
             return $language;
         }
-        if ($this->shippingAddress) {
-            $language = Country::getIsoById($this->shippingAddress->id_country);
-            if (in_array(Tools::strtoupper($language), $allowedCountries)) {
-                return $language;
-            }
+
+        return 'NonAccepted('.$lang['language_code'].')';
+    }
+
+    /**
+     * Get user language Id
+     */
+    private function getCurrentLanguageId()
+    {
+        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
+        if (is_null($allowedCountries)) {
+            return '-1';
         }
-        if ($this->billingAddress) {
-            $language = Country::getIsoById($this->billingAddress->id_country);
-            if (in_array(Tools::strtoupper($language), $allowedCountries)) {
-                return $language;
-            }
+        $lang = Language::getLanguage($this->context->language->id);
+        $langArray = explode("-", $lang['language_code']);
+        if (count($langArray) != 2 && isset($lang['locale'])) {
+            $langArray = explode("-", $lang['locale']);
         }
+        $language = Tools::strtoupper($langArray[count($langArray)-1]);
+
         if ($language == 'US' || $language == 'EN') {
             return "GB";
         }
-        return $language;
+
+        if (in_array(Tools::strtoupper($language), $allowedCountries)) {
+            return $this->context->language->id;
+        }
+
+        return '-1';
     }
 
     /**
@@ -1346,6 +1397,43 @@ class Clearpay extends PaymentModule
             return $this->defaultApiVersionPerRegion[$region];
         }
         return json_encode(array($region));
+    }
+
+    /**
+     * @return mixed|string|string[]
+     */
+    public function getIsoCountryCode()
+    {
+        if ($this->currency != 'EUR') {
+            if (!isset($this->defaultLanguagePerCurrency[$this->currency])) {
+                return 'NonAccepted';
+            }
+            $language = $this->defaultLanguagePerCurrency[$this->currency];
+            return $this->defaultIsoCountryCodePerCountry[$language];
+        }
+
+        $languageId = $this->getCurrentLanguageId();
+        if ($languageId == -1) {
+            return 'NonAccepted';
+        }
+
+        $language = Language::getLanguage($languageId);
+
+        if (isset($language['locale'])) {
+            $language = $language['locale'];
+        } else {
+            $language = $language['language_code'];
+        }
+        if (Tools::strlen($language) == 5) {
+            $part1 = Tools::substr($language, 0, 2);
+            $part2 = Tools::strtoupper(Tools::substr($language, 2, 4));
+            // Spanish dialects:
+            if ($part1 == 'ca' || $part1 == 'gl' || $part1 == 'eu') {
+                $part1 = 'es';
+            }
+            $language = $part1 . $part2;
+        }
+        return str_replace('-', '_', $language);
     }
 
     /**
@@ -1388,5 +1476,18 @@ class Clearpay extends PaymentModule
             }
         }
         return false;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isRestrictedByLangOrCurrency()
+    {
+        $language = $this->getCurrentLanguageCode();
+        $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
+        $return = (in_array(Tools::strtoupper($language), $allowedCountries) &&
+            $this->allowedCurrencyPerRegion[Configuration::get('CLEARPAY_REGION')] == $this->currency
+        );
+        return !$return;
     }
 }

@@ -35,6 +35,15 @@ class ClearpayPaymentModuleFrontController extends AbstractController
     );
 
     /**
+     * Default currency per region
+     *
+     * @var array
+     */
+    public $defaultLanguagePerCurrency = array(
+        'GBP' => 'GB',
+    );
+
+    /**
      * @param $region
      * @return string
      */
@@ -229,7 +238,7 @@ class ClearpayPaymentModuleFrontController extends AbstractController
                 $clearpayPaymentObj = $this->addPaymentV2Options($clearpayPaymentObj, $paymentObjData);
             }
             $header = $this->module->name . '/' . $this->module->version
-                . ' (Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() . '; Merchant/' . $paymentObjData['publicKey']
+                . ' (Prestashop/' . _PS_VERSION_ . '; PHP/' . phpversion() .'; Merchant/' . $paymentObjData['publicKey']
                 . ') ' . _PS_BASE_URL_SSL_.__PS_BASE_URI__;
             $clearpayPaymentObj->addHeader('User-Agent', $header);
             $clearpayPaymentObj->addHeader('Country', $paymentObjData['countryCode']);
@@ -321,6 +330,11 @@ class ClearpayPaymentModuleFrontController extends AbstractController
      */
     private function getCountryCode($paymentObjData)
     {
+        // for uk currency
+        if (isset($this->defaultLanguagePerCurrency[$paymentObjData['currency']])) {
+            return $this->defaultLanguagePerCurrency[$paymentObjData['currency']];
+        }
+
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         $lang = Language::getLanguage($this->context->language->id);
         $langArray = explode("-", $lang['language_code']);
