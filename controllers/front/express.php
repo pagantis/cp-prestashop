@@ -387,6 +387,10 @@ class ClearpayExpressModuleFrontController extends AbstractController
         $sql = 'SELECT mc.`id_reference`
 			FROM `'._DB_PREFIX_.'module_carrier` mc
 			WHERE mc.`id_module` = '. $this->module->id;
+        if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
+            $sql = 'SELECT `id_reference`
+			FROM `'._DB_PREFIX_.'carrier`';
+        }
         $moduleCarriers = Db::getInstance()->ExecuteS($sql);
         $returnCarriers = array();
         $allCarriers = Carrier::getCarriers($this->context->language->id, true);
@@ -406,7 +410,6 @@ class ClearpayExpressModuleFrontController extends AbstractController
      */
     private function captureClearpayOrder ()
     {
-
         // Validations
         try {
             $this->prepareVariables();
@@ -783,7 +786,9 @@ class ClearpayExpressModuleFrontController extends AbstractController
         $billingAddress->alias = 'ClearpayExpress:'.$this->merchantCartId;
         $billingAddress->save();
         $this->merchantCart->updateAddressId(0, $billingAddress->id);
-        $this->merchantCart->updateDeliveryAddressId(0, $billingAddress->id);
+        if (version_compare(_PS_VERSION_, '1.7', 'ge')) {
+            $this->merchantCart->updateDeliveryAddressId(0, $billingAddress->id);
+        }
         $this->merchantCart->update();
         $this->merchantCart->save();
 
@@ -831,7 +836,11 @@ class ClearpayExpressModuleFrontController extends AbstractController
         );
 
         // Update order data after clearpay complete
-        $orderId = Order::getIdByCartId($this->merchantCartId);
+        if (version_compare(_PS_VERSION_, '1.7', 'ge')) {
+            $orderId = Order::getIdByCartId($this->merchantCartId);
+        } else {
+            $orderId = Order::getOrderByCartId($this->merchantCartId);
+        }
         $order = new Order($orderId);
         $taxRate = (100 * $order->total_paid_tax_excl) / $cpAmount;
         $total_paid_tax_excl = round((($cpAmount * $taxRate) / 100), 2);

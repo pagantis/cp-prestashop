@@ -159,6 +159,7 @@ class Clearpay extends PaymentModule
             $this->currencySymbol = $context->currency->sign;
         }
 
+        $this->registerHook('displayShoppingCartFooter');
         parent::__construct();
     }
 
@@ -209,6 +210,7 @@ class Clearpay extends PaymentModule
             && $this->registerHook('actionOrderSlipAdd')
             && $this->registerHook('actionProductCancel')
             && $this->registerHook('header')
+            && $this->registerHook('displayShoppingCartFooter')
         );
 
         if ($return && _PS_VERSION_ < "1.7") {
@@ -359,6 +361,14 @@ class Clearpay extends PaymentModule
                 $this->context->controller->addJS(self::CLEARPAY_JS_CDN_URL);
             }
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function HookDisplayShoppingCartFooter()
+    {
+        return $this->getExpressButton();
     }
 
     /**
@@ -1006,20 +1016,7 @@ class Clearpay extends PaymentModule
             );
 
             if ($IsEcEnabled) {
-                $merchantCart = new Cart($this->context->cart->id);
-                if (empty($merchantCart->secure_key)) {
-                    $merchantCart->secure_key = md5(uniqid(rand(), true));
-                    $merchantCart->save();
-                }
-                $params = array(
-                    'EXPRESS_CONTROLLER' => $this->context->link->getModuleLink('clearpay', 'express'),
-                    'SECURE_KEY' => $merchantCart->secure_key
-                );
-                $this->context->smarty->assign($params);
-                $return .= $this->display(
-                    __FILE__,
-                    'views/templates/hook/express-checkout.tpl'
-                );
+                $return .= $this->getExpressButton();
             }
         } else {
             if ($isEnabled && $templateName === 'product.tpl' && Configuration::get('CLEARPAY_LOGS') === 'on') {
@@ -1045,6 +1042,47 @@ class Clearpay extends PaymentModule
 
         return $return;
     }
+
+    protected function getExpressButton()
+    {
+        $merchantCart = new Cart($this->context->cart->id);
+        $params = array();
+
+        if (!isset($this->context->smarty->tpl_vars["COUNTRY"])) {
+            $language = Language::getLanguage($this->context->language->id);
+            if (isset($language['locale'])) {
+                $language = $language['locale'];
+            } else {
+                $language = $language['language_code'];
+            }
+            if($language == "en-us") {
+                $language = "en-gb";
+            }
+            $isoCountryCode = str_replace('-', '_', $language);
+            // Preserve Uppercase in locale
+            if (Tools::strlen($isoCountryCode) == 5) {
+                $isoCountryCode = Tools::substr($isoCountryCode, 0, 2) .
+                    Tools::strtoupper(Tools::substr($isoCountryCode, 2, 4));
+            }
+            $params["COUNTRY"] = Tools::strtoupper(Tools::substr($isoCountryCode, 3, 4));;
+        }
+        // Temporary hook to prevent EC on Europe
+        if($params["COUNTRY"] != 'GB') {
+            return '';
+        }
+        if (empty($merchantCart->secure_key)) {
+            $merchantCart->secure_key = md5(uniqid(rand(), true));
+            $merchantCart->save();
+        }
+        $params["EXPRESS_CONTROLLER"] = $this->context->link->getModuleLink('clearpay', 'express');
+        $params["SECURE_KEY"] = $merchantCart->secure_key;
+        $this->context->smarty->assign($params);
+        return $this->display(
+            __FILE__,
+            'views/templates/hook/express-checkout.tpl'
+        );
+    }
+
 
     /**
      * @return bool

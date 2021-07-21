@@ -33,6 +33,12 @@
     .btn-afterpay_express img {
         width: 100%;
     }
+    #afterpay_express_button {
+        margin-bottom: 10px;
+    }
+    #HOOK_SHOPPING_CART {
+        text-align: right;
+    }
 </style>
 <!-- AfterPay.js  -->
 <script>
@@ -51,7 +57,7 @@
             target: '#afterpay_express_button',
             onCommenceCheckout: function (actions) {
                 jQuery.ajax({
-                    url: '{$EXPRESS_CONTROLLER|escape:'htmlall':'UTF-8'}',
+                    url: '{$EXPRESS_CONTROLLER|escape:'quotes':'UTF-8'}',
                     data: {
                         action: 'start_express_process',
                     },
@@ -77,7 +83,7 @@
                 } else {
                     // Calc shipping inline
                     jQuery.ajax({
-                        url: '{$EXPRESS_CONTROLLER|escape:'htmlall':'UTF-8'}',
+                        url: '{$EXPRESS_CONTROLLER|escape:'quotes':'UTF-8'}',
                         data: {
                             action: 'get_shipping_methods',
                         },
@@ -96,6 +102,7 @@
                 }
             },
             onComplete: function (event) {
+                // add overlay loading
                 console.log(event.data);
                 if (event.data) {
                     if (event.data.status && event.data.status == 'SUCCESS') {
@@ -105,7 +112,7 @@
                         }
 
                         jQuery.ajax({
-                            url: '{$EXPRESS_CONTROLLER|escape:'htmlall':'UTF-8'}',
+                            url: '{$EXPRESS_CONTROLLER|escape:'quotes':'UTF-8'}',
                             method: 'POST',
                             data: {
                                 action: 'complete_order',
@@ -124,7 +131,6 @@
                                     }
                                 } else {
                                     alert("error: " + ajax_data.message);
-                                    window.location.href = ajax_data.url;
                                 }
 
                             },
