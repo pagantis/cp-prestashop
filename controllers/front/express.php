@@ -156,6 +156,14 @@ class ClearpayExpressModuleFrontController extends AbstractController
             // use shippingOptionIdentifier order field to set the carrier
             $this->captureClearpayOrder();
         }
+
+        $url = $this->context->link->getPageLink(
+            'index',
+            null,
+            null,
+            array()
+        );
+        return Tools::redirect($url);
     }
 
     /**
@@ -796,6 +804,7 @@ class ClearpayExpressModuleFrontController extends AbstractController
         //set the customer and the guest ids into the cart
         $this->merchantCart->id_customer = $customer->id;
         $this->merchantCart->id_guest = $guest->id;
+
         //set the delivery method id into the cart
         $this->merchantCart->id_carrier = $this->clearpayOrder->shippingOptionIdentifier;
         $delivery_option = $this->merchantCart->getDeliveryOption();
@@ -821,6 +830,7 @@ class ClearpayExpressModuleFrontController extends AbstractController
             $this->config['secureKey']
         );
 
+        // Update order data after clearpay complete
         $orderId = Order::getIdByCartId($this->merchantCartId);
         $order = new Order($orderId);
         $taxRate = (100 * $order->total_paid_tax_excl) / $cpAmount;
@@ -838,6 +848,16 @@ class ClearpayExpressModuleFrontController extends AbstractController
         $order->total_shipping = $shippingTotalAmount;
         $order->total_shipping_tax_incl = $shippingTotalAmount;
         $order->total_shipping_tax_excl = round((($shippingTotalAmount * $taxRate) / 100), 2);
+        $order->save();
+
+        // Update context and cookie before redirection.
+        $this->context->customer = $customer;
+        $this->context->cookie->id_customer = (int) $customer->id;
+        $this->context->cookie->customer_lastname = $customer->lastname;
+        $this->context->cookie->customer_firstname = $customer->firstname;
+        $this->context->cookie->passwd = $customer->passwd;
+        $this->context->cookie->email = $customer->email;
+        $this->context->cookie->is_guest = $customer->isGuest();
 
         $this->updateClearpayOrder();
 
@@ -973,6 +993,7 @@ class ClearpayExpressModuleFrontController extends AbstractController
             'id_module' => $this->module->id,
             'id_order' => $this->module->currentOrder
         );
+
         if ($this->mismatchError) {
             $parameters["clearpay_mismatch"] = "true";
         }
