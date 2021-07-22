@@ -34,6 +34,16 @@ class Clearpay extends PaymentModule
     const CLEARPAY_JS_CDN_URL = 'https://js.afterpay.com/afterpay-1.x.js';
 
     /**
+     * JS CDN URL
+     */
+    const CLEARPAY_JS_EC_URL = 'https://portal.sandbox.clearpay.co.uk/afterpay.js?merchant_key=prestashop';
+
+    /**
+     * JS CDN URL
+     */
+    const EC_MAX_CARRIERS = 5;
+
+    /**
      * @var string
      */
     public $url = 'https://clearpay.com';
@@ -357,8 +367,14 @@ class Clearpay extends PaymentModule
                     self::CLEARPAY_JS_CDN_URL,
                     array('server' => 'remote')
                 );
+                $this->context->controller->registerJavascript(
+                    sha1(mt_rand(1, 90000)),
+                    self::CLEARPAY_JS_EC_URL,
+                    array('server' => 'remote')
+                );
             } else {
                 $this->context->controller->addJS(self::CLEARPAY_JS_CDN_URL);
+                $this->context->controller->addJS(self::CLEARPAY_JS_EC_URL);
             }
         }
     }
@@ -935,7 +951,7 @@ class Clearpay extends PaymentModule
         $templateConfigs = array();
         $IsEcEnabled = Configuration::get('CLEARPAY_IS_EC_ENABLED');
         if ($templateName === 'cart.tpl') {
-            $amount = Clearpay::parseAmount($this->context->cart->getOrderTotal());
+            $amount = Clearpay::parseAmount($this->context->cart->getOrderTotal(Cart::BOTH));
             $templateConfigs['AMOUNT'] =  Clearpay::parseAmount($this->context->cart->getOrderTotal()/4);
             $templateConfigs['PRICE_TEXT'] = $this->l('4 interest-free payments of');
             $templateConfigs['MORE_INFO'] = $this->l('FIND OUT MORE');
@@ -1043,46 +1059,95 @@ class Clearpay extends PaymentModule
         return $return;
     }
 
+    /**
+     * @return string
+     */
     protected function getExpressButton()
     {
-        $merchantCart = new Cart($this->context->cart->id);
-        $params = array();
+        $isEnabled = Configuration::get('CLEARPAY_IS_ENABLED');
+        $amount = Clearpay::parseAmount($this->context->cart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING));
+        $restrictedByLangOrCurrency = $this->isRestrictedByLangOrCurrency();
+        $numCarriers = $this->getAvailableCarriersNumber();
+        if ($isEnabled &&
+            $amount > 0 &&
+            $amount >= Configuration::get('CLEARPAY_MIN_AMOUNT') &&
+            $amount <= Configuration::get('CLEARPAY_MAX_AMOUNT') &&
+            !$restrictedByLangOrCurrency &&
+            $numCarriers <= self::EC_MAX_CARRIERS
+        ) {
+            $merchantCart = new Cart($this->context->cart->id);
+            $params = array();
 
-        if (!isset($this->context->smarty->tpl_vars["COUNTRY"])) {
-            $language = Language::getLanguage($this->context->language->id);
-            if (isset($language['locale'])) {
-                $language = $language['locale'];
-            } else {
-                $language = $language['language_code'];
+            if (!isset($this->context->smarty->tpl_vars["COUNTRY"])) {
+                $language = Language::getLanguage($this->context->language->id);
+                if (isset($language['locale'])) {
+                    $language = $language['locale'];
+                } else {
+                    $language = $language['language_code'];
+                }
+                if($language == "en-us") {
+                    $language = "en-gb";
+                }
+                $isoCountryCode = str_replace('-', '_', $language);
+                // Preserve Uppercase in locale
+                if (Tools::strlen($isoCountryCode) == 5) {
+                    $isoCountryCode = Tools::substr($isoCountryCode, 0, 2) .
+                        Tools::strtoupper(Tools::substr($isoCountryCode, 2, 4));
+                }
+                $params["COUNTRY"] = Tools::strtoupper(Tools::substr($isoCountryCode, 3, 4));;
             }
-            if($language == "en-us") {
-                $language = "en-gb";
+            // Temporary hook to prevent EC on Europe
+            if($params["COUNTRY"] != 'GB') {
+                return '';
             }
-            $isoCountryCode = str_replace('-', '_', $language);
-            // Preserve Uppercase in locale
-            if (Tools::strlen($isoCountryCode) == 5) {
-                $isoCountryCode = Tools::substr($isoCountryCode, 0, 2) .
-                    Tools::strtoupper(Tools::substr($isoCountryCode, 2, 4));
+            if (empty($merchantCart->secure_key)) {
+                $merchantCart->secure_key = md5(uniqid(rand(), true));
+                $merchantCart->save();
             }
-            $params["COUNTRY"] = Tools::strtoupper(Tools::substr($isoCountryCode, 3, 4));;
+            $params["EXPRESS_CONTROLLER"] = $this->context->link->getModuleLink('clearpay', 'express');
+            $params["CLEARPAY_JS_EC_URL"] = self::CLEARPAY_JS_EC_URL;
+            $params["SECURE_KEY"] = $merchantCart->secure_key;
+            $this->context->smarty->assign($params);
+            return $this->display(
+                __FILE__,
+                'views/templates/hook/express-checkout.tpl'
+            );
         }
-        // Temporary hook to prevent EC on Europe
-        if($params["COUNTRY"] != 'GB') {
-            return '';
-        }
-        if (empty($merchantCart->secure_key)) {
-            $merchantCart->secure_key = md5(uniqid(rand(), true));
-            $merchantCart->save();
-        }
-        $params["EXPRESS_CONTROLLER"] = $this->context->link->getModuleLink('clearpay', 'express');
-        $params["SECURE_KEY"] = $merchantCart->secure_key;
-        $this->context->smarty->assign($params);
-        return $this->display(
-            __FILE__,
-            'views/templates/hook/express-checkout.tpl'
+        PrestaShopLogger::addLog(
+            "Clearpay Express Checkout only support 5 shipping methods ",
+            1,
+            null,
+            "Clearpay",
+            1
         );
+        return '';
     }
 
+    /**
+     * @return array
+     */
+    private function getAvailableCarriersNumber()
+    {
+        $sql = 'SELECT mc.`id_reference`
+			FROM `'._DB_PREFIX_.'module_carrier` mc
+			WHERE mc.`id_module` = '. $this->id;
+        if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
+            $sql = 'SELECT `id_reference`
+			FROM `'._DB_PREFIX_.'carrier`';
+        }
+        $moduleCarriers = Db::getInstance()->ExecuteS($sql);
+        $numCarriers = 0;
+        $allCarriers = Carrier::getCarriers($this->context->language->id, true);
+
+        foreach ($moduleCarriers as $key => $reference) {
+            foreach ($allCarriers as $carrier) {
+                if ($carrier['id_carrier'] == $reference['id_reference']) {
+                    $numCarriers ++;
+                }
+            }
+        }
+        return $numCarriers;
+    }
 
     /**
      * @return bool
