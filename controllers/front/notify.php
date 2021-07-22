@@ -148,7 +148,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         // Validations
         try {
             $this->prepareVariables();
-            if (!is_null($this->merchantOrderId)) {
+            if (!empty($this->merchantOrderId)) {
                 $this->finishProcess(false);
             }
             $this->checkConcurrency();
@@ -326,7 +326,7 @@ class ClearpayNotifyModuleFrontController extends AbstractController
         $getOrderRequest->send();
 
         if ($getOrderRequest->getResponse()->getHttpStatusCode() >= 400) {
-            throw new \Exception($this->l('Unable to retrieve order from ') . self::PRODUCT_NAME .
+            throw new \Exception('Unable to retrieve order from ' . self::PRODUCT_NAME .
                 ': ' . $this->clearpayOrderId);
         }
         $this->clearpayOrder = $getOrderRequest->getResponse()->getParsedBody();

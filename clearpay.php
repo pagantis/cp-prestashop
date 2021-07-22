@@ -24,7 +24,7 @@ class Clearpay extends PaymentModule
     const PRODUCT_PAYMENT_NAME = "Clearpay";
 
     /**
-     * Available currency
+     * SIMULATOR_IS_ENABLED
      */
     const SIMULATOR_IS_ENABLED = true;
 
@@ -32,6 +32,16 @@ class Clearpay extends PaymentModule
      * JS CDN URL
      */
     const CLEARPAY_JS_CDN_URL = 'https://js.afterpay.com/afterpay-1.x.js';
+
+    /**
+     * JS CDN URL
+     */
+    const CLEARPAY_JS_EC_URL = 'https://portal.sandbox.clearpay.co.uk/afterpay.js?merchant_key=prestashop';
+
+    /**
+     * JS CDN URL
+     */
+    const EC_MAX_CARRIERS = 5;
 
     /**
      * @var string
@@ -141,13 +151,13 @@ class Clearpay extends PaymentModule
     {
         $this->name = 'clearpay';
         $this->tab = 'payments_gateways';
-        $this->version = '1.1.2';
+        $this->version = '1.2.0';
         $this->author = $this->l('Clearpay');
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
         $this->module_key = '1da91d21c9c3427efd7530c2be29182d';
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
-        $this->displayName = $this->l('Clearpay Payment Gateway');
+        $this->displayName = $this->l('Clearpay Payment Gateway with EC');
         $this->description = $this->l('Buy now, pay later. Always interest-free. Reach new customers, ') .
             $this->l('increase your conversion rate, recurrency and average order value ofering ') .
             $this->l('interest-free installments in your eCommerce.');
@@ -159,6 +169,7 @@ class Clearpay extends PaymentModule
             $this->currencySymbol = $context->currency->sign;
         }
 
+        $this->registerHook('displayShoppingCartFooter');
         parent::__construct();
     }
 
@@ -183,6 +194,7 @@ class Clearpay extends PaymentModule
         $this->loadSQLFile($sql_file);
 
         Configuration::updateValue('CLEARPAY_IS_ENABLED', 0);
+        Configuration::updateValue('CLEARPAY_IS_EC_ENABLED', 0);
         Configuration::updateValue('CLEARPAY_REGION', 'ES');
         Configuration::updateValue('CLEARPAY_PUBLIC_KEY', '');
         Configuration::updateValue('CLEARPAY_SECRET_KEY', '');
@@ -208,6 +220,7 @@ class Clearpay extends PaymentModule
             && $this->registerHook('actionOrderSlipAdd')
             && $this->registerHook('actionProductCancel')
             && $this->registerHook('header')
+            && $this->registerHook('displayShoppingCartFooter')
         );
 
         if ($return && _PS_VERSION_ < "1.7") {
@@ -228,6 +241,7 @@ class Clearpay extends PaymentModule
     public function uninstall()
     {
         Configuration::deleteByName('CLEARPAY_IS_ENABLED');
+        Configuration::deleteByName('CLEARPAY_IS_EC_ENABLED');
         Configuration::deleteByName('CLEARPAY_PUBLIC_KEY');
         Configuration::deleteByName('CLEARPAY_SECRET_KEY');
         Configuration::deleteByName('CLEARPAY_PRODUCTION_SECRET_KEY');
@@ -353,10 +367,24 @@ class Clearpay extends PaymentModule
                     self::CLEARPAY_JS_CDN_URL,
                     array('server' => 'remote')
                 );
+                $this->context->controller->registerJavascript(
+                    sha1(mt_rand(1, 90000)),
+                    self::CLEARPAY_JS_EC_URL,
+                    array('server' => 'remote')
+                );
             } else {
                 $this->context->controller->addJS(self::CLEARPAY_JS_CDN_URL);
+                $this->context->controller->addJS(self::CLEARPAY_JS_EC_URL);
             }
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function HookDisplayShoppingCartFooter()
+    {
+        return $this->getExpressButton();
     }
 
     /**
@@ -456,6 +484,26 @@ class Clearpay extends PaymentModule
                 ),
                 array(
                     'id' => 'CLEARPAY_IS_ENABLED_FALSE',
+                    'value' => 0,
+                    'label' => $this->l('No', get_class($this), null, false),
+                ),
+            )
+        );
+        $inputs[] = array(
+            'name' => 'CLEARPAY_IS_EC_ENABLED',
+            'type' =>  'switch',
+            'label' => $this->l('Express Checkout is enabled'),
+            'prefix' => '<i class="icon icon-key"></i>',
+            'class' => 't',
+            'required' => true,
+            'values'=> array(
+                array(
+                    'id' => 'CLEARPAY_IS_EC_ENABLED_TRUE',
+                    'value' => 1,
+                    'label' => $this->l('Yes', get_class($this), null, false),
+                ),
+                array(
+                    'id' => 'CLEARPAY_IS_EC_ENABLED_FALSE',
                     'value' => 0,
                     'label' => $this->l('No', get_class($this), null, false),
                 ),
@@ -657,6 +705,7 @@ class Clearpay extends PaymentModule
         $helper->fields_value['CLEARPAY_PUBLIC_KEY'] = Configuration::get('CLEARPAY_PUBLIC_KEY');
         $helper->fields_value['CLEARPAY_SECRET_KEY'] = Configuration::get('CLEARPAY_SECRET_KEY');
         $helper->fields_value['CLEARPAY_IS_ENABLED'] = Configuration::get('CLEARPAY_IS_ENABLED');
+        $helper->fields_value['CLEARPAY_IS_EC_ENABLED'] = Configuration::get('CLEARPAY_IS_EC_ENABLED');
         $helper->fields_value['CLEARPAY_ENVIRONMENT'] = Configuration::get('CLEARPAY_ENVIRONMENT');
         $helper->fields_value['CLEARPAY_REGION'] = Configuration::get('CLEARPAY_REGION');
         $helper->fields_value['CLEARPAY_MIN_AMOUNT'] = Configuration::get('CLEARPAY_MIN_AMOUNT');
@@ -678,6 +727,7 @@ class Clearpay extends PaymentModule
     {
         $settingsKeys = array();
         $settingsKeys[] = 'CLEARPAY_IS_ENABLED';
+        $settingsKeys[] = 'CLEARPAY_IS_EC_ENABLED';
         $settingsKeys[] = 'CLEARPAY_PUBLIC_KEY';
         $settingsKeys[] = 'CLEARPAY_SECRET_KEY';
         $settingsKeys[] = 'CLEARPAY_ENVIRONMENT';
@@ -899,8 +949,9 @@ class Clearpay extends PaymentModule
     public function templateDisplay($templateName = '')
     {
         $templateConfigs = array();
+        $IsEcEnabled = Configuration::get('CLEARPAY_IS_EC_ENABLED');
         if ($templateName === 'cart.tpl') {
-            $amount = Clearpay::parseAmount($this->context->cart->getOrderTotal());
+            $amount = Clearpay::parseAmount($this->context->cart->getOrderTotal(Cart::BOTH));
             $templateConfigs['AMOUNT'] =  Clearpay::parseAmount($this->context->cart->getOrderTotal()/4);
             $templateConfigs['PRICE_TEXT'] = $this->l('4 interest-free payments of');
             $templateConfigs['MORE_INFO'] = $this->l('FIND OUT MORE');
@@ -917,6 +968,7 @@ class Clearpay extends PaymentModule
                 $templateConfigs['PRICE_SELECTOR'] = '.cart-total .value';
             }
         } else {
+            $IsEcEnabled = false;
             $productId = Tools::getValue('id_product');
             if (!$productId) {
                 return false;
@@ -936,7 +988,6 @@ class Clearpay extends PaymentModule
         }
         $return = '';
         $isEnabled = Configuration::get('CLEARPAY_IS_ENABLED');
-
         $allowedCountries = json_decode(Configuration::get('CLEARPAY_ALLOWED_COUNTRIES'));
         $language = $this->getCurrentLanguageCode();
         $restrictedByLangOrCurrency = $this->isRestrictedByLangOrCurrency();
@@ -953,7 +1004,22 @@ class Clearpay extends PaymentModule
             $templateConfigs['CLEARPAY_MIN_AMOUNT'] = Configuration::get('CLEARPAY_MIN_AMOUNT');
             $templateConfigs['CLEARPAY_MAX_AMOUNT'] = Configuration::get('CLEARPAY_MAX_AMOUNT');
             $templateConfigs['CURRENCY'] = $this->currency;
-            $templateConfigs['ISO_COUNTRY_CODE'] = $this->getIsoCountryCode();
+            $language = Language::getLanguage($this->context->language->id);
+            if (isset($language['locale'])) {
+                $language = $language['locale'];
+            } else {
+                $language = $language['language_code'];
+            }
+            if($language == "en-US") {
+                $language = "en-GB";
+            }
+            $templateConfigs['ISO_COUNTRY_CODE'] = str_replace('-', '_', $language);
+            // Preserve Uppercase in locale
+            if (Tools::strlen($templateConfigs['ISO_COUNTRY_CODE']) == 5) {
+                $templateConfigs['ISO_COUNTRY_CODE'] = Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 0, 2) .
+                    Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 2, 4));
+            }
+            $templateConfigs['COUNTRY'] = Tools::strtoupper(Tools::substr($templateConfigs['ISO_COUNTRY_CODE'], 3, 4));
             $templateConfigs['AMOUNT_WITH_CURRENCY'] = $templateConfigs['AMOUNT'] . $this->currencySymbol;
             if ($this->currency === 'GBP') {
                 $templateConfigs['AMOUNT_WITH_CURRENCY'] = $this->currencySymbol. $templateConfigs['AMOUNT'];
@@ -964,6 +1030,10 @@ class Clearpay extends PaymentModule
                 __FILE__,
                 'views/templates/hook/' . $templateName
             );
+
+            if ($IsEcEnabled) {
+                $return .= $this->getExpressButton();
+            }
         } else {
             if ($isEnabled && $templateName === 'product.tpl' && Configuration::get('CLEARPAY_LOGS') === 'on') {
                 $logMessage = '';
@@ -987,6 +1057,96 @@ class Clearpay extends PaymentModule
         }
 
         return $return;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getExpressButton()
+    {
+        $isEnabled = Configuration::get('CLEARPAY_IS_ENABLED');
+        $amount = Clearpay::parseAmount($this->context->cart->getOrderTotal(true, Cart::BOTH_WITHOUT_SHIPPING));
+        $restrictedByLangOrCurrency = $this->isRestrictedByLangOrCurrency();
+        $numCarriers = $this->getAvailableCarriersNumber();
+        if ($isEnabled &&
+            $amount > 0 &&
+            $amount >= Configuration::get('CLEARPAY_MIN_AMOUNT') &&
+            $amount <= Configuration::get('CLEARPAY_MAX_AMOUNT') &&
+            !$restrictedByLangOrCurrency &&
+            $numCarriers <= self::EC_MAX_CARRIERS
+        ) {
+            $merchantCart = new Cart($this->context->cart->id);
+            $params = array();
+
+            if (!isset($this->context->smarty->tpl_vars["COUNTRY"])) {
+                $language = Language::getLanguage($this->context->language->id);
+                if (isset($language['locale'])) {
+                    $language = $language['locale'];
+                } else {
+                    $language = $language['language_code'];
+                }
+                if($language == "en-us") {
+                    $language = "en-gb";
+                }
+                $isoCountryCode = str_replace('-', '_', $language);
+                // Preserve Uppercase in locale
+                if (Tools::strlen($isoCountryCode) == 5) {
+                    $isoCountryCode = Tools::substr($isoCountryCode, 0, 2) .
+                        Tools::strtoupper(Tools::substr($isoCountryCode, 2, 4));
+                }
+                $params["COUNTRY"] = Tools::strtoupper(Tools::substr($isoCountryCode, 3, 4));;
+            }
+            // Temporary hook to prevent EC on Europe
+            if($params["COUNTRY"] != 'GB') {
+                return '';
+            }
+            if (empty($merchantCart->secure_key)) {
+                $merchantCart->secure_key = md5(uniqid(rand(), true));
+                $merchantCart->save();
+            }
+            $params["EXPRESS_CONTROLLER"] = $this->context->link->getModuleLink('clearpay', 'express');
+            $params["CLEARPAY_JS_EC_URL"] = self::CLEARPAY_JS_EC_URL;
+            $params["SECURE_KEY"] = $merchantCart->secure_key;
+            $this->context->smarty->assign($params);
+            return $this->display(
+                __FILE__,
+                'views/templates/hook/express-checkout.tpl'
+            );
+        }
+        PrestaShopLogger::addLog(
+            "Clearpay Express Checkout only support 5 shipping methods ",
+            1,
+            null,
+            "Clearpay",
+            1
+        );
+        return '';
+    }
+
+    /**
+     * @return array
+     */
+    private function getAvailableCarriersNumber()
+    {
+        $sql = 'SELECT mc.`id_reference`
+			FROM `'._DB_PREFIX_.'module_carrier` mc
+			WHERE mc.`id_module` = '. $this->id;
+        if (version_compare(_PS_VERSION_, '1.7', 'lt')) {
+            $sql = 'SELECT `id_reference`
+			FROM `'._DB_PREFIX_.'carrier`';
+        }
+        $moduleCarriers = Db::getInstance()->ExecuteS($sql);
+        $numCarriers = 0;
+        $allCarriers = Carrier::getCarriers($this->context->language->id, true);
+
+        foreach ($moduleCarriers as $key => $reference) {
+            foreach ($allCarriers as $carrier) {
+                if ($carrier['id_carrier'] == $reference['id_reference']) {
+                    $numCarriers ++;
+                }
+            }
+        }
+        return $numCarriers;
     }
 
     /**
@@ -1306,6 +1466,10 @@ class Clearpay extends PaymentModule
             $langArray = explode("-", $lang['locale']);
         }
         $language = Tools::strtoupper($langArray[count($langArray)-1]);
+
+        if ($language == 'US' || $language == 'EN') {
+            return "GB";
+        }
 
         if (in_array(Tools::strtoupper($language), $allowedCountries)) {
             return $this->context->language->id;
